@@ -1,0 +1,38 @@
+{
+  "name": "vio",
+  "version": "0.1.0",
+  "description": "VIO Framework",
+  "main": "bld/vio.js",
+  "typings": "bld/vio.d.ts",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vilic/vio.git"
+  },
+  "keywords": [
+    "vio",
+    "router",
+    "express"
+  ],
+  "author": "vilicvane",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vilic/vio/issues"
+  },
+  "homepage": "https://github.com/vilic/vio#readme",
+  "peerDependencies": {
+    "thenfail": "^0.3.0"
+  },
+  "dependencies": {
+    "consolidate": "^0.13.1",
+    "express": "^4.13.3",
+    "handlebars": "^3.0.3",
+    "handlebars-layouts": "^3.1.1",
+    "typescript": "next"
+  },
+  "devDependencies": {
+    "source-map-support": "^0.3.2"
+  }
+}
