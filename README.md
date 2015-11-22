@@ -6,7 +6,7 @@ A Router Driven by Express, File System, Promises, and Decorators.
 
 Currently in development.
 
-## Feature
+## Features
 
 - Resolve route path based on file system.
 - Load routes and views dynamically during development.
