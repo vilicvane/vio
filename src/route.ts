@@ -1,4 +1,5 @@
 import * as express from 'express';
+import hyphenate from 'hyphenate';
 import { Promise } from 'thenfail';
 
 import { Router } from './router';
@@ -9,15 +10,29 @@ export interface RouterOptions {
     prefix: string;
 }
 
-export enum Method {
-    ALL,
-    GET,
-    POST
+export enum HttpMethod {
+    all,
+    get,
+    post
+}
+
+export interface RouteGroupOptions {
+    
+}
+
+export class RouteGroup {
+    static expired: boolean;
+    static options: RouteGroupOptions;
+    static routes: Route[];
+    
+    static expire(): void {
+        this.expired = true;
+        this.options = undefined;
+        this.routes = undefined;
+    }
 }
 
 export interface RouteOptions {
-    method: Method;
-    
     /**
      * Path that will be appended to parent.
      * 
@@ -33,26 +48,11 @@ export interface RouteOptions {
     view?: string;
 }
 
-export interface GroupOptions {
-    
-}
-
-export class Group {
-    static expired: boolean;
-    static options: GroupOptions;
-    static routes: Route[];
-    
-    static expire(): void {
-        this.expired = true;
-        this.options = undefined;
-        this.routes = undefined;
-    }
-}
-
 export interface Route {
-    method: string;
+    methodName: string;
     path: string;
     view: string;
+    resolvedView?: string;
     handler: RouteHandler;
 }
 
@@ -60,8 +60,73 @@ export interface Request extends express.Request {
     
 }
 
-export interface Response extends express.Response {
+export interface ExpressResponse extends express.Response {
     
 }
 
-export type RouteHandler = (req: Request, res: Response) => any;
+export type RouteHandler = (req: Request, res: ExpressResponse) => any;
+
+
+/** @decoraotr */
+export function route(method: string | HttpMethod, options: RouteOptions) {
+    return (GroupClass: typeof RouteGroup, name: string) => {
+        let handler = (<Dictionary<RouteHandler>><any>GroupClass)[name];
+        
+        if (!GroupClass.routes) {
+            GroupClass.routes = [];
+        }
+        
+        let methodName: string;
+        
+        if (typeof method === 'string') {
+            methodName = method.toLowerCase();
+            if (!hop.call(HttpMethod, methodName)) {
+                throw new Error(`Unsupported HTTP method "${method}"`);
+            }
+        } else {
+            methodName = HttpMethod[method];
+        }
+        
+        let path = options.path;
+        
+        if (!path && name !== 'default') {
+            path = hyphenate(name);
+        }
+        
+        let view = options.view;
+        
+        GroupClass.routes.push({
+            methodName,
+            path,
+            view,
+            handler
+        });
+    };
+}
+
+/** @decorator */
+export function get(options = <RouteOptions>{}) {
+    return route(HttpMethod.get, options);
+}
+
+/** @decorator */
+export function post(options = <RouteOptions>{}) {
+    return route(HttpMethod.post, options);
+}
+
+/** @decorator */
+export function group(options: RouteGroupOptions = {}) {
+    return (GroupClass: typeof RouteGroup) => {
+        // let {
+        //     
+        // } = options;
+        // 
+        // GroupClass.options = {
+        //     
+        // };
+    };
+}
+
+
+
+

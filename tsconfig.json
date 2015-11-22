@@ -5,12 +5,13 @@
         "experimentalDecorators": true,
         "noEmitOnError": true,
         "noImplicitAny": true,
-        "sourceMap": true,
         "declaration": true,
+        "sourceMap": true,
         "outDir": "bld"
     },
     "exclude": [
         "bld",
+        "demo",
         "node_modules"
     ]
 }

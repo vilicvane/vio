@@ -1,6 +1,5 @@
 import { Express, Router as ExpressRouter } from 'express';
-import { Group, RouteOptions, GroupOptions } from './route';
-import { ErrorTransformer } from './api-error';
+import { ErrorTransformer } from './';
 export interface _ExpressLayer {
     handle: ExpressRouter;
 }
@@ -27,8 +26,6 @@ export declare class Router {
     app: _Express;
     /** Actual router behind the scence. */
     router: ExpressRouter;
-    /** Whether stringify results as json instead of renderring as templates data by default. */
-    defaultAsJSON: boolean;
     /** Error transformer. */
     errorTransformer: ErrorTransformer;
     constructor(app: Express, {routesRoot, viewsRoot, viewsExtension, errorViewsFolder, defaultSubsite, prefix, json}?: {
@@ -43,31 +40,33 @@ export declare class Router {
     /** A map of route file last modified timestamp. */
     private static lastModifiedMap;
     /**
-     * Attach route dynamicly based on requesting path.
+     * Attouch routes synchronously when starting up in production environment.
+     */
+    private attachRoutes();
+    private attachRoutesInFile(routeFilePath);
+    /**
+     * Attach routes dynamicly and synchronously based on requesting path.
      * Used only at development.
      */
-    attachRoutesDynamicly(requestingPath: string): void;
-    getSubsiteName(path: string): string;
+    private attachRoutesDynamicly(requestingPath);
+    /**
+     * Split request path to parts.
+     * e.g., "/abc/def/ghi?query=xyz" would be splitted to:
+     * ["/abc", "/def", "/ghi"]
+     */
+    private static splitRequestPath(path);
+    private static splitRoutePath(path);
+    private static splitRouteFilePath(path);
+    private static splitPath(path, regex);
+    private attachSingleRoute(routeFilePath, route);
+    private getPossibleRoutePaths(routeFilePath, routePath);
+    private resolveViewPath(routeFilePath, route);
+    private getPossibleViewPaths(routeFilePath, routePath);
+    private getSubsiteName(path);
     private processRequest(req, res, route, next);
     private handleNotFound(req, res);
     private handleServerError(req, res, status?);
     private renderErrorPage(req, res, status);
     private createRouteHandler(route);
-    /**
-     * Transform identifier name like:
-     * 1. "helloWorld" to "hello-world",
-     * 2. "parseJSONString" to "parse-json-string".
-     */
-    static getPathPartByIdentifierName(identifierName: string): string;
-}
-export declare namespace Router {
-    /** @decoraotr */
-    function route(options: RouteOptions): (GroupClass: typeof Group, name: string) => void;
-    /** @decorator */
-    function GET(options?: RouteOptions): (GroupClass: typeof Group, name: string) => void;
-    /** @decorator */
-    function POST(options?: RouteOptions): (GroupClass: typeof Group, name: string) => void;
-    /** @decorator */
-    function group(options?: GroupOptions): (GroupClass: typeof Group) => void;
 }
 export default Router;

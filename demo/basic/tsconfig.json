@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "experimentalDecorators": true,
+        "noEmitOnError": true,
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "outDir": "bld"
+    },
+    "exclude": [
+        "bld",
+        "node_modules"
+    ]
+}

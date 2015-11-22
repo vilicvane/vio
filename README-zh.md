@@ -8,25 +8,6 @@
 
 ## 访问路径到文件系统的匹配规则
 
-访问 `/x/y/z/` 或 `/prefix/x/y/z/` 时, vio 搜索的路由和模板文件地址如下:
-
-### 路由
-
-1. `/x/:params`
-    1. require(`routes/x.js`).default.default
-2. `/x/y/:params`
-    1. require(`routes/x.js`).default.y
-    2. require(`routes/x/y.js`).default.default
-3. `/x/y/z/`
-    1. require(`routes/x/y.js`).default.z
-    2. require(`routes/x/y/z.js`).default.default
-
-### 模板
-
-1. `templates/...route/path/xyz.hbs`
-2. `templates/...route/path/xyz/xyz.hbs`
-
-
 default 设置为 "desktop"
 
 ### /

@@ -1,62 +1,96 @@
 var FS = require('fs');
 var Path = require('path');
+var glob = require('glob');
+var Chalk = require('chalk');
 var express_1 = require('express');
 var thenfail_1 = require('thenfail');
-var route_1 = require('./route');
-var response_1 = require('./response');
-var api_error_1 = require('./api-error');
+var _1 = require('./');
 //#endregion
-var PRODUCTION = !!process.env.PRODUCTION;
+var PRODUCTION = process.env.NODE_ENV === 'production';
 var hop = Object.prototype.hasOwnProperty;
 var Router = (function () {
     function Router(app, _a) {
         var _this = this;
         var _b = _a === void 0 ? {} : _a, _c = _b.routesRoot, routesRoot = _c === void 0 ? './routes' : _c, _d = _b.viewsRoot, viewsRoot = _d === void 0 ? './views' : _d, _e = _b.viewsExtension, viewsExtension = _e === void 0 ? '.hbs' : _e, _f = _b.errorViewsFolder, errorViewsFolder = _f === void 0 ? 'error' : _f, defaultSubsite = _b.defaultSubsite, prefix = _b.prefix, _g = _b.json, json = _g === void 0 ? false : _g;
         this.app = app;
-        // Ensure root path ends without '/' or '\\'.
-        routesRoot = routesRoot.replace(/[/\\]$/, '');
-        viewsRoot = viewsRoot.replace(/[/\\]$/, '');
-        this.routesRoot = routesRoot;
-        this.viewsRoot = viewsRoot;
+        this.routesRoot = Path.resolve(routesRoot);
+        this.viewsRoot = Path.resolve(viewsRoot);
         this.errorViewsFolder = errorViewsFolder;
-        this.viewsExtension = viewsExtension;
+        if (viewsExtension) {
+            if (viewsExtension[0] !== '.') {
+                viewsExtension = '.' + viewsExtension;
+            }
+            this.viewsExtension = viewsExtension;
+        }
         this.defaultSubsite = defaultSubsite;
-        this.defaultAsJSON = json;
-        var prefixUsePath;
-        // Ensure prefix starts but not ends with '/', i.e. '/prefix'.
-        if (prefix && prefix !== '/') {
-            if (prefix[0] !== '/') {
-                prefix = '/' + prefix;
+        // ensure prefix starts but not ends with '/', i.e. '/prefix'.
+        if (prefix) {
+            if (prefix !== '/') {
+                if (prefix[0] !== '/') {
+                    prefix = '/' + prefix;
+                }
+                if (prefix[prefix.length - 1] === '/') {
+                    prefix = prefix.substr(0, prefix.length - 1);
+                }
             }
-            if (prefix[prefix.length - 1] === '/') {
-                prefix = prefix.substr(0, prefix.length - 1);
-            }
-            this.prefix = prefix;
-            prefixUsePath = prefix;
         }
         else {
-            prefix = undefined;
-            prefixUsePath = '/';
+            prefix = '/';
         }
+        this.prefix = prefix;
         this.router = express_1.Router();
         if (PRODUCTION) {
+            this.attachRoutes();
         }
         else {
             // this.app.set('view cache', false);
-            app.use(prefixUsePath, function (req, res, next) {
+            app.use(prefix, function (req, res, next) {
                 _this.attachRoutesDynamicly(req.path);
                 next();
             });
         }
-        app.use(prefixUsePath, this.router);
-        // Handle 404.
-        app.use(prefixUsePath, function (req, res) { return _this.handleNotFound(req, res); });
+        app.use(prefix, this.router);
+        // handle 404.
+        app.use(prefix, function (req, res) { return _this.handleNotFound(req, res); });
     }
+    ////////////////
+    // PRODUCTION //
+    ////////////////
     /**
-     * Attach route dynamicly based on requesting path.
+     * Attouch routes synchronously when starting up in production environment.
+     */
+    Router.prototype.attachRoutes = function () {
+        console.log('loading routes...');
+        var routeFilePaths = glob.sync('**/*.js', {
+            cwd: this.routesRoot
+        });
+        for (var _i = 0, routeFilePaths_1 = routeFilePaths; _i < routeFilePaths_1.length; _i++) {
+            var routeFilePath = routeFilePaths_1[_i];
+            this.attachRoutesInFile(routeFilePath);
+        }
+    };
+    Router.prototype.attachRoutesInFile = function (routeFilePath) {
+        var modulePath = Path.join(this.routesRoot, routeFilePath);
+        // TODO: error handling?
+        var GroupClass = require(modulePath).default;
+        var routes = GroupClass && GroupClass.routes;
+        if (!routes) {
+            throw new Error("Module \"" + modulePath + "\" does not export a valid `GroupClass`");
+        }
+        for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
+            var route = routes_1[_i];
+            this.attachSingleRoute(routeFilePath, route);
+        }
+    };
+    /////////////////
+    // DEVELOPMENT //
+    /////////////////
+    /**
+     * Attach routes dynamicly and synchronously based on requesting path.
      * Used only at development.
      */
     Router.prototype.attachRoutesDynamicly = function (requestingPath) {
+        console.log('dynamicly loading possible routes...');
         var router = express_1.Router();
         var previousRouter = this.router;
         this.router = router;
@@ -67,26 +101,17 @@ var Router = (function () {
                 break;
             }
         }
-        // Split requesting path to parts.
-        // E.g., "/abc/def/ghi?query=xyz" would be splitted to:
-        // ["/abc", "/def", "/ghi"]
-        var pathRegex = /\/[^/?]+|/g;
-        var lastPossibleRouteModulePath = '';
-        var pathPart;
-        var pathParts = [];
-        while (pathPart = pathRegex.exec(requestingPath)[0]) {
-            pathParts.push(pathPart);
-        }
+        var pathParts = Router.splitRequestPath(requestingPath);
         var firstPathPart = pathParts[0];
         var isDefaultSubsite;
         if (this.defaultSubsite) {
-            if (firstPathPart && firstPathPart.substr(1) === this.defaultSubsite) {
+            if (firstPathPart && firstPathPart === this.defaultSubsite) {
                 isDefaultSubsite = true;
             }
-            else if (!firstPathPart || (firstPathPart.substr(1) !== this.defaultSubsite &&
+            else if (!firstPathPart || (firstPathPart !== this.defaultSubsite &&
                 !FS.existsSync(Path.join(this.routesRoot, firstPathPart)))) {
                 isDefaultSubsite = true;
-                firstPathPart = '/' + this.defaultSubsite;
+                firstPathPart = this.defaultSubsite;
                 pathParts.unshift(firstPathPart);
             }
             else {
@@ -98,109 +123,189 @@ var Router = (function () {
         }
         var routeGuesses = this.defaultSubsite ? [] : [
             {
-                path: '',
+                routePath: '',
                 lastPart: '',
-                modulePaths: ['/default.js']
+                routeFilePaths: ['default.js']
             }
         ];
+        var lastPossibleRoutePath = '';
         for (var i = 0; i < pathParts.length; i++) {
-            pathPart = pathParts[i];
-            lastPossibleRouteModulePath += pathPart;
-            // If it has defaultSubsite configured, do not search the containing folder.
-            var modulePaths = i === 0 && this.defaultSubsite ? [
-                (lastPossibleRouteModulePath + "/default.js"),
-                ("" + lastPossibleRouteModulePath + pathPart + ".js")
+            var pathPart = pathParts[i];
+            lastPossibleRoutePath += '/' + pathPart;
+            // if it has default subsite configured, do not search the containing folder.
+            var routeFilePaths = i === 0 && this.defaultSubsite ? [
+                (lastPossibleRoutePath + "/default.js"),
+                (lastPossibleRoutePath + "/" + pathPart + ".js")
             ] : [
-                (lastPossibleRouteModulePath + ".js"),
-                (lastPossibleRouteModulePath + "/default.js"),
-                ("" + lastPossibleRouteModulePath + pathPart + ".js")
+                (lastPossibleRoutePath + ".js"),
+                (lastPossibleRoutePath + "/default.js"),
+                (lastPossibleRoutePath + "/" + pathPart + ".js")
             ];
             routeGuesses.push({
-                path: lastPossibleRouteModulePath,
+                routePath: lastPossibleRoutePath,
                 lastPart: pathPart,
-                modulePaths: modulePaths
+                routeFilePaths: routeFilePaths
             });
         }
-        for (var _i = 0; _i < routeGuesses.length; _i++) {
-            var routeGuess = routeGuesses[_i];
-            for (var _a = 0, _b = routeGuess.modulePaths; _a < _b.length; _a++) {
-                var modulePath = _b[_a];
-                modulePath = Path.join(this.routesRoot, modulePath);
-                if (!FS.existsSync(modulePath)) {
+        for (var _i = 0, routeGuesses_1 = routeGuesses; _i < routeGuesses_1.length; _i++) {
+            var routeGuess = routeGuesses_1[_i];
+            for (var _a = 0, _b = routeGuess.routeFilePaths; _a < _b.length; _a++) {
+                var routeFilePath = _b[_a];
+                var resolvedRouteFilePath = Path.join(this.routesRoot, routeFilePath);
+                if (!FS.existsSync(resolvedRouteFilePath)) {
                     continue;
                 }
                 var GroupClass = void 0;
                 try {
-                    var resolvedPossiblePath = require.resolve(modulePath);
-                    var lastModified = FS.statSync(resolvedPossiblePath).mtime.getTime();
-                    if (resolvedPossiblePath in Router.lastModifiedMap) {
-                        if (Router.lastModifiedMap[resolvedPossiblePath] !== lastModified) {
-                            // Avoid cache.
-                            delete require.cache[resolvedPossiblePath];
-                            Router.lastModifiedMap[resolvedPossiblePath] = lastModified;
+                    var lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
+                    if (resolvedRouteFilePath in Router.lastModifiedMap) {
+                        if (Router.lastModifiedMap[resolvedRouteFilePath] !== lastModified) {
+                            // avoid cache.
+                            delete require.cache[resolvedRouteFilePath];
+                            Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
                         }
                     }
                     else {
-                        Router.lastModifiedMap[resolvedPossiblePath] = lastModified;
+                        Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
                     }
-                    // We use the `exports.default` as the target `GroupClass`.
-                    GroupClass = require(modulePath)['default'];
+                    // we use the `exports.default` as the target `GroupClass`.
+                    GroupClass = require(resolvedRouteFilePath).default;
                 }
                 catch (e) {
-                    console.warn("Failed to load route module \"" + modulePath + "\".");
+                    console.warn("Failed to load route module \"" + resolvedRouteFilePath + "\".");
                     continue;
                 }
                 var routes = GroupClass && GroupClass.routes;
                 if (!routes) {
-                    console.warn("No `GroupClass` or valid `GroupClass` found under `exports.default` in route module \"" + modulePath + "\".");
+                    console.warn("No `GroupClass` or valid `GroupClass` found under `exports.default` in route module \"" + resolvedRouteFilePath + "\".");
                     continue;
                 }
-                for (var _c = 0; _c < routes.length; _c++) {
-                    var route = routes[_c];
-                    var method = route.method;
-                    var path = routeGuess.path + (route.path ? '/' + route.path : '');
-                    if (route.view) {
-                        var specifiedViewPath = Path.resolve(this.viewsRoot, route.view);
-                        route.view = specifiedViewPath;
-                    }
-                    else if (!this.defaultAsJSON) {
-                        var viewSearchPath = Path.join(this.viewsRoot, routeGuess.path);
-                        var possibleViewPaths = route.path ? [
-                            Path.join(viewSearchPath, route.path + this.viewsExtension),
-                            Path.join(viewSearchPath, route.path, 'default' + this.viewsExtension),
-                            Path.join(viewSearchPath, route.path, 'default/default' + this.viewsExtension),
-                            // Use `Path.basename` in case of route path like `ghi/jkl`.
-                            Path.join(viewSearchPath, route.path, Path.basename(route.path) + this.viewsExtension)
-                        ] : routeGuess.lastPart ? [
-                            viewSearchPath + this.viewsExtension,
-                            Path.join(viewSearchPath, 'default' + this.viewsExtension),
-                            Path.join(viewSearchPath, 'default/default' + this.viewsExtension),
-                            Path.join(viewSearchPath, routeGuess.lastPart + this.viewsExtension)
-                        ] : [
-                            viewSearchPath + this.viewsExtension,
-                            Path.join(viewSearchPath, 'default' + this.viewsExtension),
-                            Path.join(viewSearchPath, 'default/default' + this.viewsExtension)
-                        ];
-                        for (var _d = 0; _d < possibleViewPaths.length; _d++) {
-                            var possibleViewPath = possibleViewPaths[_d];
-                            if (FS.existsSync(possibleViewPath)) {
-                                console.log("Found view file:\n    \"" + possibleViewPath + "\".");
-                                route.view = possibleViewPath;
-                                break;
-                            }
-                        }
-                        if (!route.view) {
-                            console.warn("Found none of these view files for route \"" + path + "\":\n    " + possibleViewPaths.join('\n    '));
-                        }
-                    }
-                    var routeHandler = this.createRouteHandler(route);
-                    router[method](path, routeHandler);
-                    if (isDefaultSubsite) {
-                        router[method](path.substr(firstPathPart.length), routeHandler);
-                    }
+                for (var _c = 0, routes_2 = routes; _c < routes_2.length; _c++) {
+                    var route = routes_2[_c];
+                    this.attachSingleRoute(routeFilePath, route);
                 }
             }
         }
+    };
+    ////////////
+    // COMMON //
+    ////////////
+    /**
+     * Split request path to parts.
+     * e.g., "/abc/def/ghi?query=xyz" would be splitted to:
+     * ["/abc", "/def", "/ghi"]
+     */
+    Router.splitRequestPath = function (path) {
+        // the empty string matching pattern (after `|`) is to prevent matching from skipping undesired substring.
+        // for example, the query string part.
+        return Router.splitPath(path, /\/?([^/?]+)|/g);
+    };
+    Router.splitRoutePath = function (path) {
+        return Router.splitPath(path, /\/?([^/?*+:]+)|/g);
+    };
+    Router.splitRouteFilePath = function (path) {
+        var parts = path.match(/[^\\/]+/g) || [];
+        if (parts.length) {
+            var lastIndex = parts.length - 1;
+            parts[lastIndex] = parts[lastIndex].replace(/\.js$/gi, '');
+        }
+        if (parts.length && parts[parts.length - 1] === 'default') {
+            parts.pop();
+        }
+        return parts;
+    };
+    Router.splitPath = function (path, regex) {
+        var part;
+        var parts = [];
+        while (part = regex.exec(path)[1]) {
+            parts.push(part);
+        }
+        return parts;
+    };
+    Router.prototype.attachSingleRoute = function (routeFilePath, route) {
+        route.resolvedView = this.resolveViewPath(routeFilePath, route);
+        var router = this.router;
+        var methodName = route.methodName;
+        var routeHandler = this.createRouteHandler(route);
+        var possibleRoutePaths = this.getPossibleRoutePaths(routeFilePath, route.path);
+        for (var _i = 0, possibleRoutePaths_1 = possibleRoutePaths; _i < possibleRoutePaths_1.length; _i++) {
+            var possibleRoutePath = possibleRoutePaths_1[_i];
+            console.log(Chalk.green('*') + " " + possibleRoutePath + " " + Chalk.gray(route.resolvedView ? 'has-view' : 'no-view'));
+            router[methodName](possibleRoutePath, routeHandler);
+        }
+    };
+    Router.prototype.getPossibleRoutePaths = function (routeFilePath, routePath) {
+        var pathParts = Router.splitRouteFilePath(routeFilePath);
+        var firstPart = pathParts.shift();
+        // could be undefined if only one part (filename).
+        var lastPart = pathParts.pop();
+        var possiblePathPartsGroups = [];
+        var lastPartToConcat = lastPart ? [lastPart] : [];
+        if (firstPart) {
+            if (this.defaultSubsite === firstPart) {
+                possiblePathPartsGroups.push(pathParts.concat(lastPartToConcat));
+            }
+            possiblePathPartsGroups.push([firstPart].concat(pathParts, lastPartToConcat));
+        }
+        else if (!this.defaultSubsite) {
+            // `firstPart` is undefined means `pathParts` has 0 length.
+            possiblePathPartsGroups.push(lastPartToConcat);
+        }
+        else {
+            console.warn("Routes in file \"" + routeFilePath + "\" will not be attached as default subsite is configured.");
+        }
+        return possiblePathPartsGroups.map(function (parts) {
+            if (routePath) {
+                if (routePath[0] === '/') {
+                    if (routePath.length > 1) {
+                        parts.push(routePath.slice(1));
+                    }
+                }
+                else {
+                    parts.push(routePath);
+                }
+            }
+            return '/' + parts.join('/');
+        });
+    };
+    Router.prototype.resolveViewPath = function (routeFilePath, route) {
+        if (route.view) {
+            return Path.join(this.viewsRoot, route.view);
+        }
+        if (!this.viewsExtension) {
+            return undefined;
+        }
+        var possibleViewPaths = this.getPossibleViewPaths(routeFilePath, route.path);
+        for (var _i = 0, possibleViewPaths_1 = possibleViewPaths; _i < possibleViewPaths_1.length; _i++) {
+            var possibleViewPath = possibleViewPaths_1[_i];
+            if (FS.existsSync(possibleViewPath)) {
+                return possibleViewPath;
+            }
+        }
+        return undefined;
+    };
+    Router.prototype.getPossibleViewPaths = function (routeFilePath, routePath) {
+        var pathParts = Router.splitRouteFilePath(routeFilePath);
+        if (routePath) {
+            pathParts.push.apply(pathParts, Router.splitRoutePath(routePath));
+        }
+        var viewSearchPath = Path.join.apply(Path, [this.viewsRoot].concat(pathParts));
+        var possibleViewPaths = [];
+        if (pathParts.length) {
+            possibleViewPaths.push(viewSearchPath + this.viewsExtension);
+        }
+        possibleViewPaths.push.apply(possibleViewPaths, [
+            Path.join(viewSearchPath, 'default' + this.viewsExtension),
+            Path.join(viewSearchPath, 'default', 'default' + this.viewsExtension)
+        ]);
+        if (pathParts.length) {
+            var lastPart = pathParts[pathParts.length - 1];
+            possibleViewPaths.push.apply(possibleViewPaths, [
+                Path.join(viewSearchPath, lastPart + this.viewsExtension),
+                Path.join(viewSearchPath, 'default', lastPart + this.viewsExtension)
+            ]);
+        }
+        return possibleViewPaths;
     };
     Router.prototype.getSubsiteName = function (path) {
         var part = /\/[^/?]+|/.exec(path)[0];
@@ -215,7 +320,9 @@ var Router = (function () {
     Router.prototype.processRequest = function (req, res, route, next) {
         var _this = this;
         thenfail_1.Promise
-            .then(function () { })
+            .then(function () {
+            // authentication etc.
+        })
             .then(function () { return route.handler(req, res); })
             .then(function (result) {
             if (res.headersSent) {
@@ -225,17 +332,12 @@ var Router = (function () {
                 return;
             }
             // Handle specified response.
-            if (result instanceof response_1.Response) {
+            if (result instanceof _1.Response) {
                 result.sendTo(res);
             }
-            else if (_this.defaultAsJSON) {
-                res.json({
-                    data: result
-                });
-            }
-            else if (route.view) {
+            else if (route.resolvedView) {
                 return new thenfail_1.Promise(function (resolve, reject) {
-                    res.render(route.view, result, function (error, html) {
+                    res.render(route.resolvedView, result, function (error, html) {
                         if (error) {
                             reject(error);
                         }
@@ -247,15 +349,17 @@ var Router = (function () {
                 });
             }
             else {
-                throw new Error('Missing view file.');
+                res.json({
+                    data: result
+                });
             }
         })
             .fail(function (reason) {
             var apiError;
             if (_this.errorTransformer) {
-                apiError = _this.errorTransformer(reason) || new api_error_1.APIError(-1);
+                apiError = _this.errorTransformer(reason) || new _1.APIError(-1);
             }
-            else if (reason instanceof api_error_1.APIError) {
+            else if (reason instanceof _1.APIError) {
                 apiError = reason;
             }
             if (!res.headersSent) {
@@ -266,7 +370,6 @@ var Router = (function () {
             }
         })
             .log();
-        // .done();
     };
     Router.prototype.handleNotFound = function (req, res) {
         this.renderErrorPage(req, res, 404);
@@ -284,9 +387,9 @@ var Router = (function () {
             statusStr.substr(0, 2) + 'x' + this.viewsExtension,
             statusStr.substr(0, 1) + 'xx' + this.viewsExtension
         ];
-        for (var _i = 0; _i < possibleFileNames.length; _i++) {
-            var fileName = possibleFileNames[_i];
-            var viewPath = Path.join(this.viewsRoot, subsiteName, this.errorViewsFolder, fileName);
+        for (var _i = 0, possibleFileNames_1 = possibleFileNames; _i < possibleFileNames_1.length; _i++) {
+            var fileName = possibleFileNames_1[_i];
+            var viewPath = Path.resolve(this.viewsRoot, subsiteName, this.errorViewsFolder, fileName);
             if (FS.existsSync(viewPath)) {
                 res.render(viewPath, {
                     url: req.url,
@@ -295,9 +398,10 @@ var Router = (function () {
                 return;
             }
         }
+        // TODO: some beautiful default error pages.
         var defaultMessage = status === 404 ?
-            "Page not found.<br />\nKeep calm and visit <a href=\"https://vane.life/\">https://vane.life/</a>." :
-            "Something happened (" + status + ").<br />\nKeep calm and visit <a href=\"https://vane.life/\">https://vane.life/</a>.";
+            "Page not found.<br />\nKeep calm and read the doc <a href=\"https://github.com/vilic/vio\">https://github.com/vilic/vio</a>." :
+            "Something wrong happened (" + status + ").<br />\nKeep calm and read the doc <a href=\"https://github.com/vilic/vio\">https://github.com/vilic/vio</a>.";
         res
             .type('text/html')
             .send(defaultMessage);
@@ -308,75 +412,11 @@ var Router = (function () {
             _this.processRequest(req, res, route, next);
         };
     };
-    /**
-     * Transform identifier name like:
-     * 1. "helloWorld" to "hello-world",
-     * 2. "parseJSONString" to "parse-json-string".
-     */
-    Router.getPathPartByIdentifierName = function (identifierName) {
-        var upperCaseRegex = /[A-Z]+(?=[A-Z][a-z]|$)|[A-Z]/g;
-        return identifierName.replace(upperCaseRegex, function (m, index) {
-            return (index ? '-' : '') + m.toLowerCase();
-        });
-    };
     /** A map of route file last modified timestamp. */
     Router.lastModifiedMap = {};
     return Router;
 })();
 exports.Router = Router;
-var Router;
-(function (Router) {
-    /** @decoraotr */
-    function route(options) {
-        return function (GroupClass, name) {
-            var handler = GroupClass[name];
-            if (!GroupClass.routes) {
-                GroupClass.routes = [];
-            }
-            var method = (route_1.Method[options.method] || 'all').toLowerCase();
-            var path = options.path;
-            if (!path && name !== 'default') {
-                path = Router.getPathPartByIdentifierName(name);
-            }
-            var view = options.view;
-            GroupClass.routes.push({
-                method: method,
-                path: path,
-                view: view,
-                handler: handler
-            });
-        };
-    }
-    Router.route = route;
-    /** @decorator */
-    function GET(options) {
-        if (options === void 0) { options = {}; }
-        options.method = route_1.Method.GET;
-        return route(options);
-    }
-    Router.GET = GET;
-    /** @decorator */
-    function POST(options) {
-        if (options === void 0) { options = {}; }
-        options.method = route_1.Method.POST;
-        return route(options);
-    }
-    Router.POST = POST;
-    /** @decorator */
-    function group(options) {
-        if (options === void 0) { options = {}; }
-        return function (GroupClass) {
-            // let {
-            //     
-            // } = options;
-            // 
-            // GroupClass.options = {
-            //     
-            // };
-        };
-    }
-    Router.group = group;
-})(Router = exports.Router || (exports.Router = {}));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Router;
 //# sourceMappingURL=router.js.map

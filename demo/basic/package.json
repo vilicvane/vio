@@ -1,0 +1,16 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bld/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "consolidate": "^0.13.1",
+    "handlebars": "^4.0.5",
+    "handlebars-layouts": "^3.1.3"
+  }
+}
