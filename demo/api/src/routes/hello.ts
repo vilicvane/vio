@@ -1,8 +1,8 @@
 import { Promise } from 'thenfail';
 
-import { RouteGroup, Request, get } from '../../../../bld';
+import { Controller, Request, get } from '../../../../bld';
 
-export default class Hello extends RouteGroup {
+export default class Hello extends Controller {
     // http://localhost:1337/api/hello/world/abc
     @get({
         path: 'world/:param'

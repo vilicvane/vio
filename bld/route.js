@@ -6,17 +6,17 @@ var hop = Object.prototype.hasOwnProperty;
     HttpMethod[HttpMethod["post"] = 2] = "post";
 })(exports.HttpMethod || (exports.HttpMethod = {}));
 var HttpMethod = exports.HttpMethod;
-var RouteGroup = (function () {
-    function RouteGroup() {
+var Controller = (function () {
+    function Controller() {
     }
-    RouteGroup.expire = function () {
+    Controller.expire = function () {
         this.expired = true;
         this.options = undefined;
         this.routes = undefined;
     };
-    return RouteGroup;
+    return Controller;
 })();
-exports.RouteGroup = RouteGroup;
+exports.Controller = Controller;
 /** @decoraotr */
 function route(method, options) {
     return function (GroupClass, name) {

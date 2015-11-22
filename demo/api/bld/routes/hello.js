@@ -30,7 +30,7 @@ var Hello = (function (_super) {
         })
     ], Hello, "world", null);
     return Hello;
-})(bld_1.RouteGroup);
+})(bld_1.Controller);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Hello;
 //# sourceMappingURL=hello.js.map

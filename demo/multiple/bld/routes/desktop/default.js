@@ -15,6 +15,8 @@ var Hello = (function (_super) {
     function Hello() {
         _super.apply(this, arguments);
     }
+    // http://localhost:1337/
+    // http://localhost:1337/desktop
     Hello.default = function (req) {
         return {
             title: 'Hello, World!',
@@ -25,7 +27,7 @@ var Hello = (function (_super) {
         bld_1.get()
     ], Hello, "default", null);
     return Hello;
-})(bld_1.RouteGroup);
+})(bld_1.Controller);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Hello;
 //# sourceMappingURL=default.js.map

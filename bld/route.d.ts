@@ -7,11 +7,11 @@ export declare enum HttpMethod {
     get = 1,
     post = 2,
 }
-export interface RouteGroupOptions {
+export interface ControllerOptions {
 }
-export declare class RouteGroup {
+export declare class Controller {
     static expired: boolean;
-    static options: RouteGroupOptions;
+    static options: ControllerOptions;
     static routes: Route[];
     static expire(): void;
 }
@@ -43,10 +43,10 @@ export interface ExpressResponse extends express.Response {
 }
 export declare type RouteHandler = (req: Request, res: ExpressResponse) => any;
 /** @decoraotr */
-export declare function route(method: string | HttpMethod, options: RouteOptions): (GroupClass: typeof RouteGroup, name: string) => void;
+export declare function route(method: string | HttpMethod, options: RouteOptions): (GroupClass: typeof Controller, name: string) => void;
 /** @decorator */
-export declare function get(options?: RouteOptions): (GroupClass: typeof RouteGroup, name: string) => void;
+export declare function get(options?: RouteOptions): (GroupClass: typeof Controller, name: string) => void;
 /** @decorator */
-export declare function post(options?: RouteOptions): (GroupClass: typeof RouteGroup, name: string) => void;
+export declare function post(options?: RouteOptions): (GroupClass: typeof Controller, name: string) => void;
 /** @decorator */
-export declare function group(options?: RouteGroupOptions): (GroupClass: typeof RouteGroup) => void;
+export declare function group(options?: ControllerOptions): (GroupClass: typeof Controller) => void;

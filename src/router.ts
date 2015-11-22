@@ -17,10 +17,10 @@ import { Promise } from 'thenfail';
 
 import {
     Route,
-    RouteGroup,
+    Controller,
     RouteHandler,
     RouteOptions,
-    RouteGroupOptions,
+    ControllerOptions,
     HttpMethod,
     Response,
     APIError,
@@ -173,7 +173,7 @@ export class Router {
         let modulePath = Path.join(this.routesRoot, routeFilePath);
         
         // TODO: error handling?
-        let GroupClass: typeof RouteGroup = require(modulePath).default;
+        let GroupClass: typeof Controller = require(modulePath).default;
         let routes = GroupClass && GroupClass.routes;
         
         if (!routes) {
@@ -274,7 +274,7 @@ export class Router {
                     continue;
                 }
                 
-                let GroupClass: typeof RouteGroup;
+                let GroupClass: typeof Controller;
                 
                 try {
                     let lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();

@@ -16,13 +16,13 @@ export enum HttpMethod {
     post
 }
 
-export interface RouteGroupOptions {
+export interface ControllerOptions {
     
 }
 
-export class RouteGroup {
+export class Controller {
     static expired: boolean;
-    static options: RouteGroupOptions;
+    static options: ControllerOptions;
     static routes: Route[];
     
     static expire(): void {
@@ -69,7 +69,7 @@ export type RouteHandler = (req: Request, res: ExpressResponse) => any;
 
 /** @decoraotr */
 export function route(method: string | HttpMethod, options: RouteOptions) {
-    return (GroupClass: typeof RouteGroup, name: string) => {
+    return (GroupClass: typeof Controller, name: string) => {
         let handler = (<Dictionary<RouteHandler>><any>GroupClass)[name];
         
         if (!GroupClass.routes) {
@@ -115,8 +115,8 @@ export function post(options = <RouteOptions>{}) {
 }
 
 /** @decorator */
-export function group(options: RouteGroupOptions = {}) {
-    return (GroupClass: typeof RouteGroup) => {
+export function group(options: ControllerOptions = {}) {
+    return (GroupClass: typeof Controller) => {
         // let {
         //     
         // } = options;

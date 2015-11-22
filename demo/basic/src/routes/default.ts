@@ -1,6 +1,6 @@
-import { RouteGroup, Request, get } from '../../../../bld';
+import { Controller, Request, get } from '../../../../bld';
 
-export default class Hello extends RouteGroup {
+export default class Hello extends Controller {
     // http://localhost:1337/
     @get()
     static default(req: Request) {
