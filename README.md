@@ -65,10 +65,10 @@ app.listen(1337);
 **routes/default.js**
 
 ```ts
-import { RouteGroup, get } from 'vio';
+import { Controller, get } from 'vio';
 
-// extends `RouteGroup` class.
-export default class Default extends RouteGroup {
+// extends `Controller` class.
+export default class Default extends Controller {
     // route as a HTTP GET request.
     @get()
     static default() {
