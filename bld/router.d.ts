@@ -40,19 +40,41 @@ export declare class Router {
     /** A map of route file last modified timestamp. */
     private static lastModifiedMap;
     /**
+     * @production
      * Attouch routes synchronously when starting up in production environment.
      */
     private attachRoutes();
+    /**
+     * @production
+     */
     private attachRoutesInFile(routeFilePath);
     /**
-     * Attach routes dynamicly and synchronously based on requesting path.
+     * @development
+     * Attach routes dynamicly and synchronously based on request path.
      * Used only at development.
      */
-    private attachRoutesDynamicly(requestingPath);
+    private attachRoutesDynamically(requestPath);
     /**
+     * @development
+     */
+    private replaceRouter();
+    /**
+     * @development
+     */
+    private getCompletePathParts(requestPath);
+    /**
+     * @development
+     */
+    private guessRoutes(requestPath);
+    /**
+     * @development
+     */
+    private attachRoutesInFileDynamically(routeFilePath);
+    /**
+     * @development
      * Split request path to parts.
      * e.g., "/abc/def/ghi?query=xyz" would be splitted to:
-     * ["/abc", "/def", "/ghi"]
+     * ["abc", "def", "ghi"]
      */
     private static splitRequestPath(path);
     private static splitRoutePath(path);

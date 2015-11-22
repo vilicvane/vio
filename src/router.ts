@@ -32,6 +32,12 @@ import {
  */
 type RouteRequestHandler = (req: ExpressRequest, res: ExpressResponse) => void;
 
+interface RouteGuess {
+    routePath: string;
+    lastPart: string;
+    routeFilePaths: string[];
+}
+
 // WARNING
 // we are using private Express properties for development purpose.
 
@@ -136,7 +142,7 @@ export class Router {
             // this.app.set('view cache', false);
             
             app.use(prefix, (req, res, next) => {
-                this.attachRoutesDynamicly(req.path);
+                this.attachRoutesDynamically(req.path);
                 next();
             });
         }
@@ -155,6 +161,7 @@ export class Router {
     ////////////////
     
     /**
+     * @production
      * Attouch routes synchronously when starting up in production environment.
      */
     private attachRoutes(): void {
@@ -169,6 +176,9 @@ export class Router {
         }
     }
     
+    /**
+     * @production
+     */
     private attachRoutesInFile(routeFilePath: string): void {
         let modulePath = Path.join(this.routesRoot, routeFilePath);
         
@@ -190,12 +200,28 @@ export class Router {
     /////////////////
     
     /**
-     * Attach routes dynamicly and synchronously based on requesting path.
+     * @development
+     * Attach routes dynamicly and synchronously based on request path.
      * Used only at development.
      */
-    private attachRoutesDynamicly(requestingPath: string): void {
+    private attachRoutesDynamically(requestPath: string): void {
         console.log('dynamicly loading possible routes...');
         
+        this.replaceRouter();
+        
+        let routeGuesses = this.guessRoutes(requestPath);
+        
+        for (let routeGuess of routeGuesses) {
+            for (let routeFilePath of routeGuess.routeFilePaths) {
+                this.attachRoutesInFileDynamically(routeFilePath);
+            }
+        }
+    }
+    
+    /**
+     * @development
+     */
+    private replaceRouter(): void {
         let router = ExpressRouter();
         
         let previousRouter = this.router;
@@ -209,30 +235,33 @@ export class Router {
                 break;
             }
         }
-        
-        let pathParts = Router.splitRequestPath(requestingPath);
+    }
+    
+    /**
+     * @development
+     */
+    private getCompletePathParts(requestPath: string): string[] {
+        let pathParts = Router.splitRequestPath(requestPath);
         
         let firstPathPart = pathParts[0];
-        let isDefaultSubsite: boolean;
         
-        if (this.defaultSubsite) {
-            if (firstPathPart && firstPathPart === this.defaultSubsite) {
-                isDefaultSubsite = true;
-            } else if (
-                !firstPathPart || (
-                    firstPathPart !== this.defaultSubsite &&
-                    !FS.existsSync(Path.join(this.routesRoot, firstPathPart))
-                )
-            ) {
-                isDefaultSubsite = true;
-                firstPathPart = this.defaultSubsite;
-                pathParts.unshift(firstPathPart);
-            } else {
-                isDefaultSubsite = false;
-            }
-        } else {
-            isDefaultSubsite = false;
+        if (
+            !firstPathPart || (
+                firstPathPart !== this.defaultSubsite &&
+                !FS.existsSync(Path.join(this.routesRoot, firstPathPart))
+            )
+        ) {
+            pathParts.unshift(this.defaultSubsite);
         }
+        
+        return pathParts;
+    }
+    
+    /**
+     * @development
+     */
+    private guessRoutes(requestPath: string): RouteGuess[] {
+        let pathParts = this.getCompletePathParts(requestPath);
         
         let routeGuesses = this.defaultSubsite ? [] : [
             {
@@ -266,64 +295,68 @@ export class Router {
             });
         }
         
-        for (let routeGuess of routeGuesses) {
-            for (let routeFilePath of routeGuess.routeFilePaths) {
-                let resolvedRouteFilePath = Path.join(this.routesRoot, routeFilePath);
-                
-                if (!FS.existsSync(resolvedRouteFilePath)) {
-                    continue;
+        return routeGuesses;
+    }
+    
+    /**
+     * @development
+     */
+    private attachRoutesInFileDynamically(routeFilePath: string): void {
+        let resolvedRouteFilePath = Path.join(this.routesRoot, routeFilePath);
+        
+        if (!FS.existsSync(resolvedRouteFilePath)) {
+            return;
+        }
+        
+        let GroupClass: typeof Controller;
+        
+        try {
+            let lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
+            
+            if (resolvedRouteFilePath in Router.lastModifiedMap) {
+                if (Router.lastModifiedMap[resolvedRouteFilePath] !== lastModified) {
+                    // avoid cache.
+                    delete require.cache[resolvedRouteFilePath];
+                    Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
                 }
-                
-                let GroupClass: typeof Controller;
-                
-                try {
-                    let lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
-                    
-                    if (resolvedRouteFilePath in Router.lastModifiedMap) {
-                        if (Router.lastModifiedMap[resolvedRouteFilePath] !== lastModified) {
-                            // avoid cache.
-                            delete require.cache[resolvedRouteFilePath];
-                            Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
-                        }
-                    } else {
-                        Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
-                    }
-                    
-                    // we use the `exports.default` as the target `GroupClass`.
-                    GroupClass = require(resolvedRouteFilePath).default;
-                } catch (e) {
-                    console.warn(`Failed to load route module "${resolvedRouteFilePath}".`);
-                    continue;
-                }
-                
-                let routes = GroupClass && GroupClass.routes;
-                
-                if (!routes) {
-                    console.warn(`No \`GroupClass\` or valid \`GroupClass\` found under \`exports.default\` in route module "${resolvedRouteFilePath}".`);
-                    continue;
-                }
-                
-                for (let route of routes) {
-                    this.attachSingleRoute(routeFilePath, route);
-                }
+            } else {
+                Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
             }
+            
+            // we use the `exports.default` as the target `GroupClass`.
+            GroupClass = require(resolvedRouteFilePath).default;
+        } catch (e) {
+            console.warn(`Failed to load route module "${resolvedRouteFilePath}".`);
+            return;
+        }
+        
+        let routes = GroupClass && GroupClass.routes;
+        
+        if (!routes) {
+            console.warn(`No \`GroupClass\` or valid \`GroupClass\` found under \`exports.default\` in route module "${resolvedRouteFilePath}".`);
+            return;
+        }
+        
+        for (let route of routes) {
+            this.attachSingleRoute(routeFilePath, route);
         }
     }
     
-    ////////////
-    // COMMON //
-    ////////////
-    
     /**
+     * @development
      * Split request path to parts.
      * e.g., "/abc/def/ghi?query=xyz" would be splitted to:
-     * ["/abc", "/def", "/ghi"]
+     * ["abc", "def", "ghi"]
      */
     private static splitRequestPath(path: string): string[] {
         // the empty string matching pattern (after `|`) is to prevent matching from skipping undesired substring.
         // for example, the query string part.
         return Router.splitPath(path, /\/?([^/?]+)|/g);
     }
+    
+    ////////////
+    // COMMON //
+    ////////////
     
     private static splitRoutePath(path: string): string[] {
         return Router.splitPath(path, /\/?([^/?*+:]+)|/g);
