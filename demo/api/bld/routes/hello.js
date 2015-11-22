@@ -16,7 +16,7 @@ var Hello = (function (_super) {
     function Hello() {
         _super.apply(this, arguments);
     }
-    // http://localhost:1337/hello/world/abc
+    // http://localhost:1337/api/hello/world/abc
     Hello.world = function (req) {
         var str = req.params['param'];
         str = str.split('').reverse().join('');

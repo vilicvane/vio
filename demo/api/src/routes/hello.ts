@@ -3,7 +3,7 @@ import { Promise } from 'thenfail';
 import { RouteGroup, Request, get } from '../../../../bld';
 
 export default class Hello extends RouteGroup {
-    // http://localhost:1337/hello/world/abc
+    // http://localhost:1337/api/hello/world/abc
     @get({
         path: 'world/:param'
     })
