@@ -1,6 +1,6 @@
 # VIO
 
-A Router Driven by Express, File System, Promises, and Decorators.
+A Router Driven by Express, File Path, Promises, and Decorators.
 
 ## Status
 
@@ -97,7 +97,7 @@ Please checkout the demo folder for more usage.
 
 The previous version of VIO is used internally in the passed half a year, having handled more than 100 million page views (though it does not mean you can use this version in production). And the biggest issue this version of VIO wants to take out is slow restarting of node process when something changes. It's not a big deal if the code base is small, but when things grow, it would drive people crazy.
 
-Comparing to other dynamic loading solutions (usually by deleting node requiring cache), VIO take things a little bit further. As routes are file system based (which means no manually mapping needed), VIO guess the possible paths based on requesting url and then load the route file on demand. So creating, moving, deleting files would work without restarting node.
+Comparing to other dynamic loading solutions (usually by deleting node requiring cache), VIO take things a little bit further. As routes are file path based (which means no manually mapping needed), VIO guess the possible paths based on requesting url and then load the route file on demand. So creating, moving, deleting files would work without restarting node.
 
 ## Route Matching
 
