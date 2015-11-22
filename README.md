@@ -16,6 +16,14 @@ Currently in development.
 VIO is developed in [TypeScript](http://www.typescriptlang.org/).
 As it's using new ES features, you may need to use compiler or transpiler like TypeScript or [Babel](https://babeljs.io/).
 
+## Still Missing
+
+Some must-have features are not yet completed by now, including:
+
+- User and permission provider.
+- Middleware injection.
+- Error filtering.
+
 ## Install
 
 Install VIO.
@@ -91,7 +99,18 @@ export default class Default extends RouteGroup {
 
 Now `node server.js` and then visit http://localhost:1337/.
 
-Please checkout the demo folder for more usage.
+Please checkout the demo folder for more usage. To run a demo:
+
+```sh
+# cd to a demo folder
+cd demo/basic
+
+# install dependencies
+npm install
+
+# start node
+node bld/index.js
+```
 
 ## Dynamic Loading
 
