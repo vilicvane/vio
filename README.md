@@ -8,7 +8,7 @@ Currently in development.
 
 ## Features
 
-- Resolve route path based on file system.
+- Map route based on file path.
 - Load routes and views dynamically during development.
 - Return a promise with data to render the view.
 - Use ES7 decorators to specify route handlers.
