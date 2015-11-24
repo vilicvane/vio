@@ -8,7 +8,7 @@ Currently in development.
 
 ## Features
 
-- Map routes based on file path.
+- Map routes based on file paths.
 - Load routes and views dynamically during development.
 - Return a promise with data to render the view.
 - Use ES7 decorators to specify route handlers.
@@ -18,7 +18,7 @@ As it's using new ES features, you may need to use compiler or transpiler like T
 
 ## Still Missing
 
-Some must-have features are not yet completed by now, including:
+Some must-have features are not yet implemented by now, including:
 
 - User and permission provider.
 - Middleware injection.
@@ -68,7 +68,7 @@ app.listen(1337);
 import { Controller, get } from 'vio';
 
 // extends `Controller` class.
-export default class Default extends Controller {
+export default class DefaultController extends Controller {
     // route as a HTTP GET request.
     @get()
     static default() {
@@ -102,15 +102,17 @@ Now `node server.js` and then visit http://localhost:1337/.
 Please checkout the demo folder for more usage. To run a demo:
 
 ```sh
-# cd to a demo folder
+# cd to a demo folder.
 cd demo/basic
 
-# install dependencies
+# install dependencies.
 npm install
 
-# start node
+# start node.
 node bld/index.js
 ```
+
+Another minimum demo: https://github.com/vilic/vio-minimum-demo.
 
 ## Dynamic Loading
 

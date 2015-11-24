@@ -1,11 +1,8 @@
 {
   "name": "demo",
   "version": "1.0.0",
-  "description": "",
+  "description": "vilicvane",
   "main": "bld/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
   "license": "MIT",
   "dependencies": {

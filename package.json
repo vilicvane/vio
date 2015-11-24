@@ -1,10 +1,11 @@
 {
   "name": "vio",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "VIO Framework",
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "test": "mocha"
   },
   "repository": {
@@ -27,18 +28,15 @@
   },
   "dependencies": {
     "chalk": "^1.1.1",
-    "consolidate": "^0.13.1",
     "express": "^4.13.3",
     "glob": "^6.0.1",
-    "handlebars": "^3.0.3",
-    "handlebars-layouts": "^3.1.1",
     "hyphenate": "^0.1.1",
-    "thenfail": "^0.3.9",
-    "typescript": "next"
+    "thenfail": "^0.3.9"
   },
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
-    "source-map-support": "^0.3.3"
+    "source-map-support": "^0.3.3",
+    "typescript": "next"
   }
 }
