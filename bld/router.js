@@ -75,16 +75,9 @@ var Router = (function () {
      */
     Router.prototype.attachRoutesInFile = function (routeFilePath) {
         var modulePath = Path.join(this.routesRoot, routeFilePath);
-        // TODO: error handling?
-        var GroupClass = require(modulePath).default;
-        var routes = GroupClass && GroupClass.routes;
-        if (!routes) {
-            throw new Error("Module \"" + modulePath + "\" does not export a valid `GroupClass`");
-        }
-        for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
-            var route = routes_1[_i];
-            this.attachSingleRoute(routeFilePath, route);
-        }
+        // TODO: error handling
+        var ControllerClass = require(modulePath).default;
+        this.attachRoutesOnController(ControllerClass, routeFilePath);
     };
     /////////////////
     // DEVELOPMENT //
@@ -174,35 +167,27 @@ var Router = (function () {
         if (!FS.existsSync(resolvedRouteFilePath)) {
             return;
         }
-        var GroupClass;
+        var ControllerClass;
         try {
             var lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
-            if (resolvedRouteFilePath in Router.lastModifiedMap) {
-                if (Router.lastModifiedMap[resolvedRouteFilePath] !== lastModified) {
+            if (resolvedRouteFilePath in Router.lastModifiedTimestamps) {
+                if (Router.lastModifiedTimestamps.get(resolvedRouteFilePath) !== lastModified) {
                     // avoid cache.
                     delete require.cache[resolvedRouteFilePath];
-                    Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
+                    Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
                 }
             }
             else {
-                Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
+                Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
             }
-            // we use the `exports.default` as the target `GroupClass`.
-            GroupClass = require(resolvedRouteFilePath).default;
+            // we use the `exports.default` as the target `ControllerClass`.
+            ControllerClass = require(resolvedRouteFilePath).default;
         }
         catch (e) {
             console.warn("Failed to load route module \"" + resolvedRouteFilePath + "\".");
             return;
         }
-        var routes = GroupClass && GroupClass.routes;
-        if (!routes) {
-            console.warn("No `GroupClass` or valid `GroupClass` found under `exports.default` in route module \"" + resolvedRouteFilePath + "\".");
-            return;
-        }
-        for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
-            var route = routes_2[_i];
-            this.attachSingleRoute(routeFilePath, route);
-        }
+        this.attachRoutesOnController(ControllerClass, routeFilePath);
     };
     /**
      * @development
@@ -240,6 +225,19 @@ var Router = (function () {
         }
         return parts;
     };
+    Router.prototype.attachRoutesOnController = function (ControllerClass, routeFilePath) {
+        var _this = this;
+        var routes = ControllerClass && ControllerClass.routes;
+        if (!routes) {
+            console.error("module \"" + routeFilePath + "\" does not export a valid controller.");
+            return;
+        }
+        var permissionDescriptors = ControllerClass.permissionDescriptors;
+        routes.forEach(function (route, name) {
+            route.permissionDescriptor = permissionDescriptors.get(name);
+            _this.attachSingleRoute(routeFilePath, route);
+        });
+    };
     Router.prototype.attachSingleRoute = function (routeFilePath, route) {
         route.resolvedView = this.resolveViewPath(routeFilePath, route);
         var router = this.router;
@@ -251,6 +249,12 @@ var Router = (function () {
             console.log(Chalk.green('*') + " " + possibleRoutePath + " " + Chalk.gray(route.resolvedView ? 'has-view' : 'no-view'));
             router[methodName](possibleRoutePath, routeHandler);
         }
+    };
+    Router.prototype.createRouteHandler = function (route) {
+        var _this = this;
+        return function (req, res, next) {
+            _this.processRequest(req, res, route, next);
+        };
     };
     Router.prototype.getPossibleRoutePaths = function (routeFilePath, routePath) {
         var pathParts = Router.splitRouteFilePath(routeFilePath);
@@ -325,21 +329,29 @@ var Router = (function () {
         }
         return possibleViewPaths;
     };
-    Router.prototype.getSubsiteName = function (path) {
-        var part = /\/[^/?]+|/.exec(path)[0];
-        if (part) {
-            var subsiteDir = Path.join(this.routesRoot, part);
-            if (FS.existsSync(subsiteDir)) {
-                return part.substr(1);
-            }
-        }
-        return this.defaultSubsite;
-    };
     Router.prototype.processRequest = function (req, res, route, next) {
         var _this = this;
         thenfail_1.Promise
             .then(function () {
-            // authentication etc.
+            if (_this.userProvider) {
+                if (route.authentication) {
+                    return _this.userProvider.authenticate(req);
+                }
+                else {
+                    return _this.userProvider.get(req);
+                }
+            }
+            else {
+                return undefined;
+            }
+        })
+            .then(function (user) {
+            var permissionDescriptor = route.permissionDescriptor;
+            if (permissionDescriptor &&
+                !permissionDescriptor.validate(user && user.permission)) {
+                throw new _1.APIError(_1.APIErrorCode.permissionDenied, 'Permission denied', 403);
+            }
+            req.user = user;
         })
             .then(function () { return route.handler(req, res); })
             .then(function (result) {
@@ -398,8 +410,26 @@ var Router = (function () {
     };
     Router.prototype.renderErrorPage = function (req, res, status) {
         res.status(status);
+        var viewPath = this.findErrorPageViewPath(req.path);
+        if (viewPath) {
+            res.render(viewPath, {
+                url: req.url,
+                status: status
+            });
+        }
+        else {
+            // TODO: some beautiful default error pages.
+            var defaultMessage = status === 404 ?
+                "Page not found.<br />\nKeep calm and read the doc <a href=\"https://github.com/vilic/vio\">https://github.com/vilic/vio</a>." :
+                "Something wrong happened (" + status + ").<br />\nKeep calm and read the doc <a href=\"https://github.com/vilic/vio\">https://github.com/vilic/vio</a>.";
+            res
+                .type('text/html')
+                .send(defaultMessage);
+        }
+    };
+    Router.prototype.findErrorPageViewPath = function (requestPath) {
         var statusStr = status.toString();
-        var subsiteName = this.getSubsiteName(req.path) || '';
+        var subsiteName = this.getSubsiteName(requestPath) || '';
         var possibleFileNames = [
             statusStr + this.viewsExtension,
             statusStr.substr(0, 2) + 'x' + this.viewsExtension,
@@ -409,29 +439,24 @@ var Router = (function () {
             var fileName = possibleFileNames_1[_i];
             var viewPath = Path.resolve(this.viewsRoot, subsiteName, this.errorViewsFolder, fileName);
             if (FS.existsSync(viewPath)) {
-                res.render(viewPath, {
-                    url: req.url,
-                    status: status
-                });
-                return;
+                return viewPath;
             }
         }
-        // TODO: some beautiful default error pages.
-        var defaultMessage = status === 404 ?
-            "Page not found.<br />\nKeep calm and read the doc <a href=\"https://github.com/vilic/vio\">https://github.com/vilic/vio</a>." :
-            "Something wrong happened (" + status + ").<br />\nKeep calm and read the doc <a href=\"https://github.com/vilic/vio\">https://github.com/vilic/vio</a>.";
-        res
-            .type('text/html')
-            .send(defaultMessage);
+        return undefined;
     };
-    Router.prototype.createRouteHandler = function (route) {
-        var _this = this;
-        return function (req, res, next) {
-            _this.processRequest(req, res, route, next);
-        };
+    Router.prototype.getSubsiteName = function (requestPath) {
+        var part = /\/[^/?]+|/.exec(requestPath)[0];
+        if (part) {
+            var subsiteDir = Path.join(this.routesRoot, part);
+            // cache in production mode
+            if (FS.existsSync(subsiteDir)) {
+                return part.substr(1);
+            }
+        }
+        return this.defaultSubsite;
     };
     /** A map of route file last modified timestamp. */
-    Router.lastModifiedMap = {};
+    Router.lastModifiedTimestamps = new Map();
     return Router;
 })();
 exports.Router = Router;

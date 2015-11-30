@@ -1,5 +1,5 @@
 import { Express, Router as ExpressRouter } from 'express';
-import { ErrorTransformer } from './';
+import { UserProvider, RequestUser, ErrorTransformer } from './';
 export interface _ExpressLayer {
     handle: ExpressRouter;
 }
@@ -28,6 +28,8 @@ export declare class Router {
     router: ExpressRouter;
     /** Error transformer. */
     errorTransformer: ErrorTransformer;
+    /** User provider. */
+    userProvider: UserProvider<RequestUser<any>>;
     constructor(app: Express, {routesRoot, viewsRoot, viewsExtension, errorViewsFolder, defaultSubsite, prefix, json}?: {
         routesRoot?: string;
         viewsRoot?: string;
@@ -38,7 +40,7 @@ export declare class Router {
         json?: boolean;
     });
     /** A map of route file last modified timestamp. */
-    private static lastModifiedMap;
+    private static lastModifiedTimestamps;
     /**
      * @production
      * Attouch routes synchronously when starting up in production environment.
@@ -80,15 +82,17 @@ export declare class Router {
     private static splitRoutePath(path);
     private static splitRouteFilePath(path);
     private static splitPath(path, regex);
+    private attachRoutesOnController(ControllerClass, routeFilePath);
     private attachSingleRoute(routeFilePath, route);
+    private createRouteHandler(route);
     private getPossibleRoutePaths(routeFilePath, routePath);
     private resolveViewPath(routeFilePath, route);
     private getPossibleViewPaths(routeFilePath, routePath);
-    private getSubsiteName(path);
     private processRequest(req, res, route, next);
     private handleNotFound(req, res);
     private handleServerError(req, res, status?);
     private renderErrorPage(req, res, status);
-    private createRouteHandler(route);
+    private findErrorPageViewPath(requestPath);
+    private getSubsiteName(requestPath);
 }
 export default Router;

@@ -18,12 +18,16 @@ import { Promise } from 'thenfail';
 import {
     Route,
     Controller,
+    PermissionDescriptor,
+    UserProvider,
+    RequestUser,
     RouteHandler,
     RouteOptions,
     ControllerOptions,
     HttpMethod,
     Response,
     APIError,
+    APIErrorCode,
     ErrorTransformer
 } from './';
 
@@ -80,6 +84,8 @@ export class Router {
     router: ExpressRouter;
     /** Error transformer. */
     errorTransformer: ErrorTransformer;
+    /** User provider. */
+    userProvider: UserProvider<RequestUser<any>>;
     
     constructor(
         app: Express,
@@ -154,7 +160,7 @@ export class Router {
     }
     
     /** A map of route file last modified timestamp. */
-    private static lastModifiedMap: Dictionary<number> = {};
+    private static lastModifiedTimestamps = new Map<string, number>();
     
     ////////////////
     // PRODUCTION //
@@ -182,17 +188,10 @@ export class Router {
     private attachRoutesInFile(routeFilePath: string): void {
         let modulePath = Path.join(this.routesRoot, routeFilePath);
         
-        // TODO: error handling?
-        let GroupClass: typeof Controller = require(modulePath).default;
-        let routes = GroupClass && GroupClass.routes;
+        // TODO: error handling
+        let ControllerClass: typeof Controller = require(modulePath).default;
         
-        if (!routes) {
-            throw new Error(`Module "${modulePath}" does not export a valid \`GroupClass\``);
-        }
-        
-        for (let route of routes) {
-            this.attachSingleRoute(routeFilePath, route);
-        }
+        this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
     
     /////////////////
@@ -308,38 +307,29 @@ export class Router {
             return;
         }
         
-        let GroupClass: typeof Controller;
+        let ControllerClass: typeof Controller;
         
         try {
             let lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
             
-            if (resolvedRouteFilePath in Router.lastModifiedMap) {
-                if (Router.lastModifiedMap[resolvedRouteFilePath] !== lastModified) {
+            if (resolvedRouteFilePath in Router.lastModifiedTimestamps) {
+                if (Router.lastModifiedTimestamps.get(resolvedRouteFilePath) !== lastModified) {
                     // avoid cache.
                     delete require.cache[resolvedRouteFilePath];
-                    Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
+                    Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
                 }
             } else {
-                Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
+                Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
             }
             
-            // we use the `exports.default` as the target `GroupClass`.
-            GroupClass = require(resolvedRouteFilePath).default;
+            // we use the `exports.default` as the target `ControllerClass`.
+            ControllerClass = require(resolvedRouteFilePath).default;
         } catch (e) {
             console.warn(`Failed to load route module "${resolvedRouteFilePath}".`);
             return;
         }
         
-        let routes = GroupClass && GroupClass.routes;
-        
-        if (!routes) {
-            console.warn(`No \`GroupClass\` or valid \`GroupClass\` found under \`exports.default\` in route module "${resolvedRouteFilePath}".`);
-            return;
-        }
-        
-        for (let route of routes) {
-            this.attachSingleRoute(routeFilePath, route);
-        }
+        this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
     
     /**
@@ -386,6 +376,22 @@ export class Router {
         }
         
         return parts;
+    }
+    
+    private attachRoutesOnController(ControllerClass: typeof Controller, routeFilePath: string): void {
+        let routes = ControllerClass && ControllerClass.routes;
+        
+        if (!routes) {
+            console.error(`module "${routeFilePath}" does not export a valid controller.`);
+            return;
+        }
+        
+        let permissionDescriptors = ControllerClass.permissionDescriptors;
+        
+        routes.forEach((route, name) => {
+            route.permissionDescriptor = permissionDescriptors.get(name);
+            this.attachSingleRoute(routeFilePath, route);
+        });
     }
     
     private attachSingleRoute(routeFilePath: string, route: Route): void {
@@ -503,7 +509,27 @@ export class Router {
     private processRequest(req: ExpressRequest, res: ExpressResponse, route: Route, next: Function): void {
         Promise
             .then(() => {
-                // authentication etc.
+                if (this.userProvider) {
+                    if (route.authentication) {
+                        return this.userProvider.authenticate(req);
+                    } else {
+                        return this.userProvider.get(req);
+                    }
+                } else {
+                    return undefined;
+                }
+            })
+            .then(user => {
+                let permissionDescriptor = route.permissionDescriptor;
+                
+                if (
+                    permissionDescriptor &&
+                    !permissionDescriptor.validate(user && user.permission)
+                ) {
+                    throw new APIError(APIErrorCode.permissionDenied, 'Permission denied', 403);
+                }
+                
+                req.user = user;
             })
             .then(() => route.handler(req, res))
             .then((result: Object | Response) => {
