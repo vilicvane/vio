@@ -403,6 +403,12 @@ export class Router {
         }
     }
     
+    private createRouteHandler(route: Route): ExpressRequestHandler {
+        return (req, res, next) => {
+            this.processRequest(req, res, route, next);
+        };
+    }
+    
     private getPossibleRoutePaths(routeFilePath: string, routePath: string): string[] {
         let pathParts = Router.splitRouteFilePath(routeFilePath);
         
@@ -494,19 +500,6 @@ export class Router {
         return possibleViewPaths;
     }
     
-    private getSubsiteName(path: string): string {
-        let part = /\/[^/?]+|/.exec(path)[0];
-        
-        if (part) {
-            let subsiteDir = Path.join(this.routesRoot, part);
-            if (FS.existsSync(subsiteDir)) {
-                return part.substr(1);
-            }
-        }
-        
-        return this.defaultSubsite;
-    }
-    
     private processRequest(req: ExpressRequest, res: ExpressResponse, route: Route, next: Function): void {
         Promise
             .then(() => {
@@ -574,8 +567,31 @@ ${route.handler.toString()}`);
     private renderErrorPage(req: ExpressRequest, res: ExpressResponse, status: number): void {
         res.status(status);
         
+        let viewPath = this.findErrorPageViewPath(req.path);
+        
+        if (viewPath) {
+            res.render(viewPath, {
+                url: req.url,
+                status
+            });
+        } else {
+            // TODO: some beautiful default error pages.
+            
+            let defaultMessage = status === 404 ?
+                `Page not found.<br />
+Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.` :
+                `Something wrong happened (${status}).<br />
+Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`;
+            
+            res
+                .type('text/html')
+                .send(defaultMessage);
+        }
+    }
+    
+    private findErrorPageViewPath(requestPath: string): string {
         let statusStr = status.toString();
-        let subsiteName = this.getSubsiteName(req.path) || '';
+        let subsiteName = this.getSubsiteName(requestPath) || '';
         
         let possibleFileNames = [
             statusStr + this.viewsExtension,
@@ -587,32 +603,26 @@ ${route.handler.toString()}`);
             let viewPath = Path.resolve(this.viewsRoot, subsiteName, this.errorViewsFolder, fileName);
             
             if (FS.existsSync(viewPath)) {
-                res.render(viewPath, {
-                    url: req.url,
-                    status
-                });
-                
-                return;
+                return viewPath;
             }
         }
         
-        // TODO: some beautiful default error pages.
-        
-        let defaultMessage = status === 404 ?
-            `Page not found.<br />
-Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.` :
-            `Something wrong happened (${status}).<br />
-Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`;
-        
-        res
-            .type('text/html')
-            .send(defaultMessage);
+        return undefined;
     }
     
-    private createRouteHandler(route: Route): ExpressRequestHandler {
-        return (req, res, next) => {
-            this.processRequest(req, res, route, next);
-        };
+    private getSubsiteName(requestPath: string): string {
+        let part = /\/[^/?]+|/.exec(requestPath)[0];
+        
+        if (part) {
+            let subsiteDir = Path.join(this.routesRoot, part);
+            
+            // cache in production mode
+            if (FS.existsSync(subsiteDir)) {
+                return part.substr(1);
+            }
+        }
+        
+        return this.defaultSubsite;
     }
 }
 
