@@ -1,6 +1,6 @@
 {
   "name": "vio",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "VIO Framework",
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
@@ -35,7 +35,10 @@
   },
   "devDependencies": {
     "chai": "^3.4.1",
+    "consolidate": "^0.13.1",
+    "handlebars": "^4.0.5",
     "mocha": "^2.3.4",
+    "request": "^2.67.0",
     "source-map-support": "^0.3.3",
     "typescript": "next"
   }

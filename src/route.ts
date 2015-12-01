@@ -1,6 +1,6 @@
 import * as express from 'express';
 import hyphenate from 'hyphenate';
-import { Promise } from 'thenfail';
+import { Promise, Resolvable } from 'thenfail';
 
 import { Router } from './router';
 
@@ -20,10 +20,12 @@ export interface ControllerOptions {
     
 }
 
-export class Controller {
+export abstract class Controller {
     static expired: boolean;
     static options: ControllerOptions;
-    static routes: Route[];
+    
+    static permissionDescriptors: Map<string, PermissionDescriptor<any>>;
+    static routes: Map<string, Route>;
     
     static expire(): void {
         this.expired = true;
@@ -42,10 +44,10 @@ export interface RouteOptions {
      * 3. :paramA/:paramB
      */
     path?: string;
-    /**
-     * Specify view path.
-     */
+    /** Specify view path. */
     view?: string;
+    /** Require authentication. */
+    authentication?: boolean;
 }
 
 export interface Route {
@@ -54,27 +56,29 @@ export interface Route {
     view: string;
     resolvedView?: string;
     handler: RouteHandler;
+    authentication: boolean;
+    permissionDescriptor?: PermissionDescriptor<any>;
 }
 
-export interface Request extends express.Request {
-    
+export interface Request<TUser extends RequestUser<any>> extends express.Request {
+    user: TUser;
 }
 
-export interface ExpressResponse extends express.Response {
-    
-}
+export type ExpressRequest = express.Request;
+export type ExpressResponse = express.Response;
 
-export type RouteHandler = (req: Request, res: ExpressResponse) => any;
+export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse) => any;
 
 
 /** @decoraotr */
 export function route(method: string | HttpMethod, options: RouteOptions) {
-    return (GroupClass: typeof Controller, name: string) => {
-        let handler = (<Dictionary<RouteHandler>><any>GroupClass)[name];
-        
-        if (!GroupClass.routes) {
-            GroupClass.routes = [];
+    return (ControllerClass: typeof Controller, name: string) => {
+        if (!ControllerClass.routes) {
+            ControllerClass.routes = new Map<string, Route>();
+            ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
         }
+        
+        let handler: RouteHandler = (<any>ControllerClass)[name].bind(ControllerClass);
         
         let methodName: string;
         
@@ -87,19 +91,18 @@ export function route(method: string | HttpMethod, options: RouteOptions) {
             methodName = HttpMethod[method];
         }
         
-        let path = options.path;
+        let { path, view, authentication = false } = options;
         
         if (!path && name !== 'default') {
             path = hyphenate(name);
         }
         
-        let view = options.view;
-        
-        GroupClass.routes.push({
+        ControllerClass.routes.set(name, {
             methodName,
             path,
             view,
-            handler
+            handler,
+            authentication
         });
     };
 }
@@ -114,19 +117,81 @@ export function post(options = <RouteOptions>{}) {
     return route(HttpMethod.post, options);
 }
 
-/** @decorator */
-export function group(options: ControllerOptions = {}) {
-    return (GroupClass: typeof Controller) => {
-        // let {
-        //     
-        // } = options;
-        // 
-        // GroupClass.options = {
-        //     
-        // };
+// /** @decorator */
+// export function controller(options: ControllerOptions = {}) {
+//     return (ControllerClass: typeof Controller) => {
+//         // ...
+//     };
+// }
+
+export abstract class PermissionDescriptor<T> {
+    abstract validate(userPermission: T): boolean;
+    
+    static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
+        return new CompoundOrPermissionDescriptor<T>(permissions);
+    }
+    
+    static and<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
+        return new CompoundAndPermissionDescriptor<T>(permissions);
+    }
+}
+
+export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
+    constructor(
+        public descriptors: PermissionDescriptor<T>[]
+    ) {
+        super();
+    }
+    
+    validate(permission: T): boolean {
+        for (let descriptor of this.descriptors) {
+            if (descriptor.validate(permission)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+}
+
+export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> {
+    constructor(
+        public descriptors: PermissionDescriptor<T>[]
+    ) {
+        super();
+    }
+    
+    validate(permission: T): boolean {
+        for (let descriptor of this.descriptors) {
+            if (!descriptor.validate(permission)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
+
+/** @decoraotr */
+export function permission<T>(...descriptors: PermissionDescriptor<T>[]) {
+    let descriptor = descriptors.length === 1 ?
+        descriptors[0] :
+        new CompoundOrPermissionDescriptor(descriptors);
+    
+    return (ControllerClass: typeof Controller, name: string) => {
+        if (!ControllerClass.permissionDescriptors) {
+            ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
+        }
+        
+        ControllerClass.permissionDescriptors.set(name, descriptor);
     };
 }
 
+export interface RequestUser<TPermission> {
+    permission: TPermission;
+}
 
-
-
+export interface UserProvider<T extends RequestUser<any>> {
+    get(req: ExpressRequest): Resolvable<T>;
+    authenticate(req: ExpressRequest): Resolvable<T>;
+}

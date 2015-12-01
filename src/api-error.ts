@@ -2,6 +2,8 @@
  * APIError class.
  */
 export class APIError extends Error {
+    name = (this.constructor as any).name;
+    
     constructor(
         public code: number,
         message = 'Unknown error.',
@@ -11,5 +13,17 @@ export class APIError extends Error {
     }
 }
 
+export enum APIErrorCode {
+    none = 0,
+    
+    // permission error
+    permissionDenied = 1000,
+    
+    // unknown
+    unknown = -1
+}
+
 /** Error transformer */
-export type ErrorTransformer = (reason: any) => APIError;
+export interface ErrorTransformer {
+    (reason: any): APIError;
+}

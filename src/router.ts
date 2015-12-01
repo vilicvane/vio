@@ -18,12 +18,16 @@ import { Promise } from 'thenfail';
 import {
     Route,
     Controller,
+    PermissionDescriptor,
+    UserProvider,
+    RequestUser,
     RouteHandler,
     RouteOptions,
     ControllerOptions,
     HttpMethod,
     Response,
     APIError,
+    APIErrorCode,
     ErrorTransformer
 } from './';
 
@@ -80,6 +84,8 @@ export class Router {
     router: ExpressRouter;
     /** Error transformer. */
     errorTransformer: ErrorTransformer;
+    /** User provider. */
+    userProvider: UserProvider<RequestUser<any>>;
     
     constructor(
         app: Express,
@@ -90,7 +96,8 @@ export class Router {
             errorViewsFolder = 'error',
             defaultSubsite,
             prefix,
-            json = false
+            json = false,
+            production = PRODUCTION
         }: {
             routesRoot?: string;
             viewsRoot?: string;
@@ -99,6 +106,7 @@ export class Router {
             defaultSubsite?: string;
             prefix?: string;
             json?: boolean;
+            production?: boolean;
         } = {}
     ) {
         this.app = app as _Express;
@@ -136,7 +144,7 @@ export class Router {
         this.prefix = prefix;
         this.router = ExpressRouter();
         
-        if (PRODUCTION) {
+        if (production) {
             this.attachRoutes();
         } else {
             // this.app.set('view cache', false);
@@ -152,9 +160,6 @@ export class Router {
         // handle 404.
         app.use(prefix, (req, res) => this.handleNotFound(req, res));
     }
-    
-    /** A map of route file last modified timestamp. */
-    private static lastModifiedMap: Dictionary<number> = {};
     
     ////////////////
     // PRODUCTION //
@@ -182,17 +187,10 @@ export class Router {
     private attachRoutesInFile(routeFilePath: string): void {
         let modulePath = Path.join(this.routesRoot, routeFilePath);
         
-        // TODO: error handling?
-        let GroupClass: typeof Controller = require(modulePath).default;
-        let routes = GroupClass && GroupClass.routes;
+        // TODO: error handling
+        let ControllerClass: typeof Controller = require(modulePath).default;
         
-        if (!routes) {
-            throw new Error(`Module "${modulePath}" does not export a valid \`GroupClass\``);
-        }
-        
-        for (let route of routes) {
-            this.attachSingleRoute(routeFilePath, route);
-        }
+        this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
     
     /////////////////
@@ -308,39 +306,33 @@ export class Router {
             return;
         }
         
-        let GroupClass: typeof Controller;
+        let ControllerClass: typeof Controller;
         
         try {
             let lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
             
-            if (resolvedRouteFilePath in Router.lastModifiedMap) {
-                if (Router.lastModifiedMap[resolvedRouteFilePath] !== lastModified) {
+            if (resolvedRouteFilePath in Router.lastModifiedTimestamps) {
+                if (Router.lastModifiedTimestamps.get(resolvedRouteFilePath) !== lastModified) {
                     // avoid cache.
                     delete require.cache[resolvedRouteFilePath];
-                    Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
+                    Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
                 }
             } else {
-                Router.lastModifiedMap[resolvedRouteFilePath] = lastModified;
+                Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
             }
             
-            // we use the `exports.default` as the target `GroupClass`.
-            GroupClass = require(resolvedRouteFilePath).default;
+            // we use the `exports.default` as the target `ControllerClass`.
+            ControllerClass = require(resolvedRouteFilePath).default;
         } catch (e) {
             console.warn(`Failed to load route module "${resolvedRouteFilePath}".`);
             return;
         }
         
-        let routes = GroupClass && GroupClass.routes;
-        
-        if (!routes) {
-            console.warn(`No \`GroupClass\` or valid \`GroupClass\` found under \`exports.default\` in route module "${resolvedRouteFilePath}".`);
-            return;
-        }
-        
-        for (let route of routes) {
-            this.attachSingleRoute(routeFilePath, route);
-        }
+        this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
+    
+    /** A map of route file last modified timestamp. */
+    private static lastModifiedTimestamps = new Map<string, number>();
     
     /**
      * @development
@@ -388,6 +380,25 @@ export class Router {
         return parts;
     }
     
+    private attachRoutesOnController(ControllerClass: typeof Controller, routeFilePath: string): void {
+        let routes = ControllerClass && ControllerClass.routes;
+        
+        if (!routes) {
+            console.error(`module "${routeFilePath}" does not export a valid controller.`);
+            return;
+        }
+        
+        let permissionDescriptors = ControllerClass.permissionDescriptors;
+        
+        routes.forEach((route, name) => {
+            if (permissionDescriptors) {
+                route.permissionDescriptor = permissionDescriptors.get(name);
+            }
+            
+            this.attachSingleRoute(routeFilePath, route);
+        });
+    }
+    
     private attachSingleRoute(routeFilePath: string, route: Route): void {
         route.resolvedView = this.resolveViewPath(routeFilePath, route);
         
@@ -401,6 +412,12 @@ export class Router {
             console.log(`${Chalk.green('*')} ${possibleRoutePath} ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
             ((router as any)[methodName] as ExpressRouterMatcher<any>)(possibleRoutePath, routeHandler);
         }
+    }
+    
+    private createRouteHandler(route: Route): ExpressRequestHandler {
+        return (req, res, next) => {
+            this.processRequest(req, res, route, next);
+        };
     }
     
     private getPossibleRoutePaths(routeFilePath: string, routePath: string): string[] {
@@ -494,23 +511,30 @@ export class Router {
         return possibleViewPaths;
     }
     
-    private getSubsiteName(path: string): string {
-        let part = /\/[^/?]+|/.exec(path)[0];
-        
-        if (part) {
-            let subsiteDir = Path.join(this.routesRoot, part);
-            if (FS.existsSync(subsiteDir)) {
-                return part.substr(1);
-            }
-        }
-        
-        return this.defaultSubsite;
-    }
-    
     private processRequest(req: ExpressRequest, res: ExpressResponse, route: Route, next: Function): void {
         Promise
             .then(() => {
-                // authentication etc.
+                if (this.userProvider) {
+                    if (route.authentication) {
+                        return this.userProvider.authenticate(req);
+                    } else {
+                        return this.userProvider.get(req);
+                    }
+                } else {
+                    return undefined;
+                }
+            })
+            .then(user => {
+                let permissionDescriptor = route.permissionDescriptor;
+                
+                if (
+                    permissionDescriptor &&
+                    !permissionDescriptor.validate(user && user.permission)
+                ) {
+                    throw new APIError(APIErrorCode.permissionDenied, 'Permission denied', 403);
+                }
+                
+                req.user = user;
             })
             .then(() => route.handler(req, res))
             .then((result: Object | Response) => {
@@ -574,8 +598,31 @@ ${route.handler.toString()}`);
     private renderErrorPage(req: ExpressRequest, res: ExpressResponse, status: number): void {
         res.status(status);
         
+        let viewPath = this.findErrorPageViewPath(req.path, status);
+        
+        if (viewPath) {
+            res.render(viewPath, {
+                url: req.url,
+                status
+            });
+        } else {
+            // TODO: some beautiful default error pages.
+            
+            let defaultMessage = status === 404 ?
+                `Page not found.<br />
+Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.` :
+                `Something wrong happened (${status}).<br />
+Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`;
+            
+            res
+                .type('text/html')
+                .send(defaultMessage);
+        }
+    }
+    
+    private findErrorPageViewPath(requestPath: string, status: number): string {
         let statusStr = status.toString();
-        let subsiteName = this.getSubsiteName(req.path) || '';
+        let subsiteName = this.getSubsiteName(requestPath) || '';
         
         let possibleFileNames = [
             statusStr + this.viewsExtension,
@@ -587,32 +634,26 @@ ${route.handler.toString()}`);
             let viewPath = Path.resolve(this.viewsRoot, subsiteName, this.errorViewsFolder, fileName);
             
             if (FS.existsSync(viewPath)) {
-                res.render(viewPath, {
-                    url: req.url,
-                    status
-                });
-                
-                return;
+                return viewPath;
             }
         }
         
-        // TODO: some beautiful default error pages.
-        
-        let defaultMessage = status === 404 ?
-            `Page not found.<br />
-Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.` :
-            `Something wrong happened (${status}).<br />
-Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`;
-        
-        res
-            .type('text/html')
-            .send(defaultMessage);
+        return undefined;
     }
     
-    private createRouteHandler(route: Route): ExpressRequestHandler {
-        return (req, res, next) => {
-            this.processRequest(req, res, route, next);
-        };
+    private getSubsiteName(requestPath: string): string {
+        let part = /\/[^/?]+|/.exec(requestPath)[0];
+        
+        if (part) {
+            let subsiteDir = Path.join(this.routesRoot, part);
+            
+            // cache in production mode
+            if (FS.existsSync(subsiteDir)) {
+                return part.substr(1);
+            }
+        }
+        
+        return this.defaultSubsite;
     }
 }
 

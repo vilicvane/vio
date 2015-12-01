@@ -14,8 +14,17 @@ var APIError = (function (_super) {
         _super.call(this, message);
         this.code = code;
         this.status = status;
+        this.name = this.constructor.name;
     }
     return APIError;
 })(Error);
 exports.APIError = APIError;
+(function (APIErrorCode) {
+    APIErrorCode[APIErrorCode["none"] = 0] = "none";
+    // permission error
+    APIErrorCode[APIErrorCode["permissionDenied"] = 1000] = "permissionDenied";
+    // unknown
+    APIErrorCode[APIErrorCode["unknown"] = -1] = "unknown";
+})(exports.APIErrorCode || (exports.APIErrorCode = {}));
+var APIErrorCode = exports.APIErrorCode;
 //# sourceMappingURL=api-error.js.map
