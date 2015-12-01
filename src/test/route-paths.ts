@@ -1,18 +1,28 @@
-require('source-map-support').install();
-var Path = require('path');
-var util_1 = require('util');
-var _1 = require('../');
-describe('router', function () {
-    var router = {
+import * as Path from 'path';
+import { inspect } from 'util';
+
+import { Router } from '../';
+
+describe('router', () => {
+    let router: {
+        defaultSubsite: string;
+        viewsRoot: string;
+        viewsExtension: string;
+        getPossibleRoutePaths: (routeFilePath: string, routePath: string) => string;
+        getPossibleViewPaths: (routeFilePath: string, routePath: string) => string;
+    } = {
         defaultSubsite: undefined,
         viewsRoot: 'views-root',
         viewsExtension: '.hbs',
-        getPossibleRoutePaths: _1.Router.prototype.getPossibleRoutePaths,
-        getPossibleViewPaths: _1.Router.prototype.getPossibleViewPaths
+        getPossibleRoutePaths: (Router.prototype as any).getPossibleRoutePaths,
+        getPossibleViewPaths: (Router.prototype as any).getPossibleViewPaths
     };
-    context('#getPossibleRoutePaths', function () {
-        context('default subsite not configured', function () {
-            var samples = [
+    
+    context('#getPossibleRoutePaths', () => {
+        type Sample = [string, string, string[]];
+        
+        context('default subsite not configured', () => {
+            let samples: Sample[] = [
                 [
                     'abc/def.js',
                     undefined,
@@ -49,20 +59,18 @@ describe('router', function () {
                     ['/abc']
                 ]
             ];
-            var _loop_1 = function(sample) {
-                it("should get correct possible paths (" + util_1.inspect(sample[0]) + ", " + util_1.inspect(sample[1]) + ")", function () {
+            
+            for (let sample of samples) {
+                it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
                     router
                         .getPossibleRoutePaths(sample[0], sample[1])
                         .should.deep.equal(sample[2]);
                 });
-            };
-            for (var _i = 0, samples_1 = samples; _i < samples_1.length; _i++) {
-                var sample = samples_1[_i];
-                _loop_1(sample);
             }
         });
-        context('default subsite configured as "abc"', function () {
-            var samples = [
+        
+        context('default subsite configured as "abc"', () => {
+            let samples: Sample[] = [
                 [
                     'abc/def.js',
                     undefined,
@@ -79,24 +87,26 @@ describe('router', function () {
                     ['/', '/abc']
                 ]
             ];
-            before(function () {
+            
+            before(() => {
                 router.defaultSubsite = 'abc';
             });
-            var _loop_2 = function(sample) {
-                it("should get correct possible paths (" + util_1.inspect(sample[0]) + ", " + util_1.inspect(sample[1]) + ")", function () {
+            
+            for (let sample of samples) {
+                it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
                     router
                         .getPossibleRoutePaths(sample[0], sample[1])
                         .should.deep.equal(sample[2]);
                 });
-            };
-            for (var _i = 0, samples_2 = samples; _i < samples_2.length; _i++) {
-                var sample = samples_2[_i];
-                _loop_2(sample);
             }
         });
     });
-    context('#getPossibleViewPaths', function () {
-        var samples = [
+    
+    
+    context('#getPossibleViewPaths', () => {
+        type Sample = [string, string, string[]];
+        
+        let samples: Sample[] = [
             [
                 'abc/def.js',
                 undefined,
@@ -172,22 +182,21 @@ describe('router', function () {
                 ]
             ]
         ];
-        var _loop_3 = function(sample) {
-            it("should get correct possible paths (" + util_1.inspect(sample[0]) + ", " + util_1.inspect(sample[1]) + ")", function () {
-                var paths = router.getPossibleViewPaths(sample[0], sample[1]);
-                var expectedPaths = sample[2];
+        
+        for (let sample of samples) {
+            it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
+                let paths = router.getPossibleViewPaths(sample[0], sample[1]);
+                let expectedPaths = sample[2];
+                
                 paths.length.should.equal(expectedPaths.length);
-                for (var i = 0; i < paths.length; i++) {
-                    var path = paths[i];
-                    var expectedPath = expectedPaths[i];
+                
+                for (let i = 0; i < paths.length; i++) {
+                    let path = paths[i];
+                    let expectedPath = expectedPaths[i];
+                    
                     Path.relative(path, expectedPath).should.equal('');
                 }
             });
-        };
-        for (var _i = 0, samples_3 = samples; _i < samples_3.length; _i++) {
-            var sample = samples_3[_i];
-            _loop_3(sample);
         }
     });
 });
-//# sourceMappingURL=router.js.map

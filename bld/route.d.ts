@@ -10,7 +10,7 @@ export declare enum HttpMethod {
 }
 export interface ControllerOptions {
 }
-export declare class Controller {
+export declare abstract class Controller {
     static expired: boolean;
     static options: ControllerOptions;
     static permissionDescriptors: Map<string, PermissionDescriptor<any>>;
@@ -53,8 +53,6 @@ export declare function route(method: string | HttpMethod, options: RouteOptions
 export declare function get(options?: RouteOptions): (ControllerClass: typeof Controller, name: string) => void;
 /** @decorator */
 export declare function post(options?: RouteOptions): (ControllerClass: typeof Controller, name: string) => void;
-/** @decorator */
-export declare function controller(options?: ControllerOptions): (ControllerClass: typeof Controller) => void;
 export declare abstract class PermissionDescriptor<T> {
     abstract validate(userPermission: T): boolean;
     static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T>;

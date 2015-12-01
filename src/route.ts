@@ -20,12 +20,12 @@ export interface ControllerOptions {
     
 }
 
-export class Controller {
+export abstract class Controller {
     static expired: boolean;
     static options: ControllerOptions;
     
-    static permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
-    static routes = new Map<string, Route>();
+    static permissionDescriptors: Map<string, PermissionDescriptor<any>>;
+    static routes: Map<string, Route>;
     
     static expire(): void {
         this.expired = true;
@@ -73,6 +73,11 @@ export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse
 /** @decoraotr */
 export function route(method: string | HttpMethod, options: RouteOptions) {
     return (ControllerClass: typeof Controller, name: string) => {
+        if (!ControllerClass.routes) {
+            ControllerClass.routes = new Map<string, Route>();
+            ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
+        }
+        
         let handler: RouteHandler = (<any>ControllerClass)[name].bind(ControllerClass);
         
         let methodName: string;
@@ -112,12 +117,12 @@ export function post(options = <RouteOptions>{}) {
     return route(HttpMethod.post, options);
 }
 
-/** @decorator */
-export function controller(options: ControllerOptions = {}) {
-    return (ControllerClass: typeof Controller) => {
-        // ...
-    };
-}
+// /** @decorator */
+// export function controller(options: ControllerOptions = {}) {
+//     return (ControllerClass: typeof Controller) => {
+//         // ...
+//     };
+// }
 
 export abstract class PermissionDescriptor<T> {
     abstract validate(userPermission: T): boolean;
@@ -174,6 +179,10 @@ export function permission<T>(...descriptors: PermissionDescriptor<T>[]) {
         new CompoundOrPermissionDescriptor(descriptors);
     
     return (ControllerClass: typeof Controller, name: string) => {
+        if (!ControllerClass.permissionDescriptors) {
+            ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
+        }
+        
         ControllerClass.permissionDescriptors.set(name, descriptor);
     };
 }

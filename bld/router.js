@@ -11,7 +11,7 @@ var hop = Object.prototype.hasOwnProperty;
 var Router = (function () {
     function Router(app, _a) {
         var _this = this;
-        var _b = _a === void 0 ? {} : _a, _c = _b.routesRoot, routesRoot = _c === void 0 ? './routes' : _c, _d = _b.viewsRoot, viewsRoot = _d === void 0 ? './views' : _d, _e = _b.viewsExtension, viewsExtension = _e === void 0 ? '.hbs' : _e, _f = _b.errorViewsFolder, errorViewsFolder = _f === void 0 ? 'error' : _f, defaultSubsite = _b.defaultSubsite, prefix = _b.prefix, _g = _b.json, json = _g === void 0 ? false : _g;
+        var _b = _a === void 0 ? {} : _a, _c = _b.routesRoot, routesRoot = _c === void 0 ? './routes' : _c, _d = _b.viewsRoot, viewsRoot = _d === void 0 ? './views' : _d, _e = _b.viewsExtension, viewsExtension = _e === void 0 ? '.hbs' : _e, _f = _b.errorViewsFolder, errorViewsFolder = _f === void 0 ? 'error' : _f, defaultSubsite = _b.defaultSubsite, prefix = _b.prefix, _g = _b.json, json = _g === void 0 ? false : _g, _h = _b.production, production = _h === void 0 ? PRODUCTION : _h;
         this.app = app;
         this.routesRoot = Path.resolve(routesRoot);
         this.viewsRoot = Path.resolve(viewsRoot);
@@ -39,7 +39,7 @@ var Router = (function () {
         }
         this.prefix = prefix;
         this.router = express_1.Router();
-        if (PRODUCTION) {
+        if (production) {
             this.attachRoutes();
         }
         else {
@@ -234,7 +234,9 @@ var Router = (function () {
         }
         var permissionDescriptors = ControllerClass.permissionDescriptors;
         routes.forEach(function (route, name) {
-            route.permissionDescriptor = permissionDescriptors.get(name);
+            if (permissionDescriptors) {
+                route.permissionDescriptor = permissionDescriptors.get(name);
+            }
             _this.attachSingleRoute(routeFilePath, route);
         });
     };
@@ -410,7 +412,7 @@ var Router = (function () {
     };
     Router.prototype.renderErrorPage = function (req, res, status) {
         res.status(status);
-        var viewPath = this.findErrorPageViewPath(req.path);
+        var viewPath = this.findErrorPageViewPath(req.path, status);
         if (viewPath) {
             res.render(viewPath, {
                 url: req.url,
@@ -427,7 +429,7 @@ var Router = (function () {
                 .send(defaultMessage);
         }
     };
-    Router.prototype.findErrorPageViewPath = function (requestPath) {
+    Router.prototype.findErrorPageViewPath = function (requestPath, status) {
         var statusStr = status.toString();
         var subsiteName = this.getSubsiteName(requestPath) || '';
         var possibleFileNames = [

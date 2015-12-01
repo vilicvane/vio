@@ -30,7 +30,7 @@ export declare class Router {
     errorTransformer: ErrorTransformer;
     /** User provider. */
     userProvider: UserProvider<RequestUser<any>>;
-    constructor(app: Express, {routesRoot, viewsRoot, viewsExtension, errorViewsFolder, defaultSubsite, prefix, json}?: {
+    constructor(app: Express, {routesRoot, viewsRoot, viewsExtension, errorViewsFolder, defaultSubsite, prefix, json, production}?: {
         routesRoot?: string;
         viewsRoot?: string;
         viewsExtension?: string;
@@ -38,9 +38,8 @@ export declare class Router {
         defaultSubsite?: string;
         prefix?: string;
         json?: boolean;
+        production?: boolean;
     });
-    /** A map of route file last modified timestamp. */
-    private static lastModifiedTimestamps;
     /**
      * @production
      * Attouch routes synchronously when starting up in production environment.
@@ -72,6 +71,8 @@ export declare class Router {
      * @development
      */
     private attachRoutesInFileDynamically(routeFilePath);
+    /** A map of route file last modified timestamp. */
+    private static lastModifiedTimestamps;
     /**
      * @development
      * Split request path to parts.
@@ -92,7 +93,7 @@ export declare class Router {
     private handleNotFound(req, res);
     private handleServerError(req, res, status?);
     private renderErrorPage(req, res, status);
-    private findErrorPageViewPath(requestPath);
+    private findErrorPageViewPath(requestPath, status);
     private getSubsiteName(requestPath);
 }
 export default Router;

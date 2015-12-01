@@ -96,7 +96,8 @@ export class Router {
             errorViewsFolder = 'error',
             defaultSubsite,
             prefix,
-            json = false
+            json = false,
+            production = PRODUCTION
         }: {
             routesRoot?: string;
             viewsRoot?: string;
@@ -105,6 +106,7 @@ export class Router {
             defaultSubsite?: string;
             prefix?: string;
             json?: boolean;
+            production?: boolean;
         } = {}
     ) {
         this.app = app as _Express;
@@ -142,7 +144,7 @@ export class Router {
         this.prefix = prefix;
         this.router = ExpressRouter();
         
-        if (PRODUCTION) {
+        if (production) {
             this.attachRoutes();
         } else {
             // this.app.set('view cache', false);
@@ -158,9 +160,6 @@ export class Router {
         // handle 404.
         app.use(prefix, (req, res) => this.handleNotFound(req, res));
     }
-    
-    /** A map of route file last modified timestamp. */
-    private static lastModifiedTimestamps = new Map<string, number>();
     
     ////////////////
     // PRODUCTION //
@@ -332,6 +331,9 @@ export class Router {
         this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
     
+    /** A map of route file last modified timestamp. */
+    private static lastModifiedTimestamps = new Map<string, number>();
+    
     /**
      * @development
      * Split request path to parts.
@@ -389,7 +391,10 @@ export class Router {
         let permissionDescriptors = ControllerClass.permissionDescriptors;
         
         routes.forEach((route, name) => {
-            route.permissionDescriptor = permissionDescriptors.get(name);
+            if (permissionDescriptors) {
+                route.permissionDescriptor = permissionDescriptors.get(name);
+            }
+            
             this.attachSingleRoute(routeFilePath, route);
         });
     }
@@ -593,7 +598,7 @@ ${route.handler.toString()}`);
     private renderErrorPage(req: ExpressRequest, res: ExpressResponse, status: number): void {
         res.status(status);
         
-        let viewPath = this.findErrorPageViewPath(req.path);
+        let viewPath = this.findErrorPageViewPath(req.path, status);
         
         if (viewPath) {
             res.render(viewPath, {
@@ -615,7 +620,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
         }
     }
     
-    private findErrorPageViewPath(requestPath: string): string {
+    private findErrorPageViewPath(requestPath: string, status: number): string {
         let statusStr = status.toString();
         let subsiteName = this.getSubsiteName(requestPath) || '';
         

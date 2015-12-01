@@ -15,6 +15,7 @@ export class APIError extends Error {
 
 export enum APIErrorCode {
     none = 0,
+    
     // permission error
     permissionDenied = 1000,
     

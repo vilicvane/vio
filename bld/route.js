@@ -19,14 +19,16 @@ var Controller = (function () {
         this.options = undefined;
         this.routes = undefined;
     };
-    Controller.permissionDescriptors = new Map();
-    Controller.routes = new Map();
     return Controller;
 })();
 exports.Controller = Controller;
 /** @decoraotr */
 function route(method, options) {
     return function (ControllerClass, name) {
+        if (!ControllerClass.routes) {
+            ControllerClass.routes = new Map();
+            ControllerClass.permissionDescriptors = new Map();
+        }
         var handler = ControllerClass[name].bind(ControllerClass);
         var methodName;
         if (typeof method === 'string') {
@@ -64,14 +66,12 @@ function post(options) {
     return route(HttpMethod.post, options);
 }
 exports.post = post;
-/** @decorator */
-function controller(options) {
-    if (options === void 0) { options = {}; }
-    return function (ControllerClass) {
-        // ...
-    };
-}
-exports.controller = controller;
+// /** @decorator */
+// export function controller(options: ControllerOptions = {}) {
+//     return (ControllerClass: typeof Controller) => {
+//         // ...
+//     };
+// }
 var PermissionDescriptor = (function () {
     function PermissionDescriptor() {
     }
@@ -138,6 +138,9 @@ function permission() {
         descriptors[0] :
         new CompoundOrPermissionDescriptor(descriptors);
     return function (ControllerClass, name) {
+        if (!ControllerClass.permissionDescriptors) {
+            ControllerClass.permissionDescriptors = new Map();
+        }
         ControllerClass.permissionDescriptors.set(name, descriptor);
     };
 }
