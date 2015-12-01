@@ -29,8 +29,6 @@ describe('sites', () => {
         cwd: __dirname
     });
     
-    console.log(siteRoutesDirnames);
-    
     for (let siteRoutesDirname of siteRoutesDirnames) {
         for (let production of [true, false]) {
             context(siteRoutesDirname + (production ? '(production mode)' : '(development mode)'), () => {
