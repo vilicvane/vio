@@ -1,4 +1,4 @@
-# VIO
+# VIO [![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio)
 
 A Router Driven by Express, File Path, Promises, and Decorators.
 
@@ -15,14 +15,6 @@ Currently in development.
 
 VIO is developed in [TypeScript](http://www.typescriptlang.org/).
 As it's using new ES features, you may need to use compiler or transpiler like TypeScript or [Babel](https://babeljs.io/).
-
-## Still Missing
-
-Some must-have features are not yet implemented by now, including:
-
-- User and permission provider.
-- Middleware injection.
-- Error filtering.
 
 ## Install
 
