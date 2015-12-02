@@ -1,5 +1,7 @@
 # VIO [![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio)
 
+[![Join the chat at https://gitter.im/vilic/vio](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vilic/vio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A Router Driven by Express, File Path, Promises, and Decorators.
 
 ## Status
