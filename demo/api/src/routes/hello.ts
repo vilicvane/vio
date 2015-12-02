@@ -7,7 +7,7 @@ export default class Hello extends Controller {
     @get({
         path: 'world/:param'
     })
-    static world(req: Request) {
+    static world(req: Request<any>) {
         let str: string = req.params['param'];
         str = str.split('').reverse().join('');
         

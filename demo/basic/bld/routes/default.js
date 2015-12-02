@@ -16,7 +16,7 @@ var Hello = (function (_super) {
         _super.apply(this, arguments);
     }
     // http://localhost:1337/
-    Hello.default = function (req) {
+    Hello.default = function () {
         return {
             title: 'Hello, World!',
             text: 'hello! thank you! thank you very much!'

@@ -2,6 +2,7 @@ var FS = require('fs');
 var Path = require('path');
 var glob = require('glob');
 var Chalk = require('chalk');
+var vioRequire = require('./require')(require);
 var express_1 = require('express');
 var thenfail_1 = require('thenfail');
 var _1 = require('./');
@@ -169,22 +170,11 @@ var Router = (function () {
         }
         var ControllerClass;
         try {
-            var lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
-            if (resolvedRouteFilePath in Router.lastModifiedTimestamps) {
-                if (Router.lastModifiedTimestamps.get(resolvedRouteFilePath) !== lastModified) {
-                    // avoid cache.
-                    delete require.cache[resolvedRouteFilePath];
-                    Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
-                }
-            }
-            else {
-                Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
-            }
-            // we use the `exports.default` as the target `ControllerClass`.
-            ControllerClass = require(resolvedRouteFilePath).default;
+            // we use the `exports.default` as the target controller class.
+            ControllerClass = vioRequire(resolvedRouteFilePath).default;
         }
-        catch (e) {
-            console.warn("Failed to load route module \"" + resolvedRouteFilePath + "\".");
+        catch (error) {
+            console.warn("Failed to load route module \"" + resolvedRouteFilePath + "\".\n" + error.stack);
             return;
         }
         this.attachRoutesOnController(ControllerClass, routeFilePath);
@@ -457,8 +447,6 @@ var Router = (function () {
         }
         return this.defaultSubsite;
     };
-    /** A map of route file last modified timestamp. */
-    Router.lastModifiedTimestamps = new Map();
     return Router;
 })();
 exports.Router = Router;

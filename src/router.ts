@@ -4,6 +4,8 @@ import * as Path from 'path';
 import * as glob from 'glob';
 import * as Chalk from 'chalk';
 
+const vioRequire: NodeRequire = require('./require')(require);
+
 import {
     Express,
     Router as ExpressRouter,
@@ -16,15 +18,15 @@ import {
 import { Promise } from 'thenfail';
 
 import {
+    HttpMethod,
     Route,
+    RouteHandler,
+    RouteOptions,
     Controller,
+    ControllerOptions,
     PermissionDescriptor,
     UserProvider,
     RequestUser,
-    RouteHandler,
-    RouteOptions,
-    ControllerOptions,
-    HttpMethod,
     Response,
     APIError,
     APIErrorCode,
@@ -309,30 +311,16 @@ export class Router {
         let ControllerClass: typeof Controller;
         
         try {
-            let lastModified = FS.statSync(resolvedRouteFilePath).mtime.getTime();
-            
-            if (resolvedRouteFilePath in Router.lastModifiedTimestamps) {
-                if (Router.lastModifiedTimestamps.get(resolvedRouteFilePath) !== lastModified) {
-                    // avoid cache.
-                    delete require.cache[resolvedRouteFilePath];
-                    Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
-                }
-            } else {
-                Router.lastModifiedTimestamps.set(resolvedRouteFilePath, lastModified);
-            }
-            
-            // we use the `exports.default` as the target `ControllerClass`.
-            ControllerClass = require(resolvedRouteFilePath).default;
-        } catch (e) {
-            console.warn(`Failed to load route module "${resolvedRouteFilePath}".`);
+            // we use the `exports.default` as the target controller class.
+            ControllerClass = vioRequire(resolvedRouteFilePath).default;
+        } catch (error) {
+            console.warn(`Failed to load route module "${resolvedRouteFilePath}".
+${error.stack}`);
             return;
         }
         
         this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
-    
-    /** A map of route file last modified timestamp. */
-    private static lastModifiedTimestamps = new Map<string, number>();
     
     /**
      * @development

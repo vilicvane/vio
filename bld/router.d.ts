@@ -71,8 +71,6 @@ export declare class Router {
      * @development
      */
     private attachRoutesInFileDynamically(routeFilePath);
-    /** A map of route file last modified timestamp. */
-    private static lastModifiedTimestamps;
     /**
      * @development
      * Split request path to parts.

@@ -5,7 +5,7 @@ export default class Hello extends Controller {
     @get({
         path: 'world/:param?'
     })
-    static world(req: Request) {
+    static world(req: Request<any>) {
         return {
             title: 'Hello, World!',
             text: 'hello! thank you! thank you very much!',

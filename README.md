@@ -1,15 +1,15 @@
 # VIO [![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio)
 
-A Router Driven by Express, File Path, Promises, and Decorators.
+An express "endware" that takes your feelings into consideration.
 
-## Status
+## Conversation
 
-Currently in development.
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vilic/vio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Features
 
-- Map routes based on file paths.
-- Load routes and views dynamically during development.
+- Map routes and controllers based on file paths.
+- Support dynamic routes mapping and hot module replacement during development.
 - Return a promise with data to render the view.
 - Use ES7 decorators to specify route handlers.
 
