@@ -410,6 +410,15 @@ ${error.stack}`);
     private getPossibleRoutePaths(routeFilePath: string, routePath: string): string[] {
         let pathParts = Router.splitRouteFilePath(routeFilePath);
         
+        // some path like `abc/abc.js`.
+        // `.js` has already been taken out by `splitRouteFilePath`.
+        let filenameDoubled = pathParts.length >= 2 &&
+            pathParts[pathParts.length - 1] === pathParts[pathParts.length - 2];
+        
+        if (filenameDoubled) {
+            pathParts.pop();
+        }
+        
         let firstPart = pathParts.shift();
         // could be undefined if only one part (filename).
         let lastPart = pathParts.pop();

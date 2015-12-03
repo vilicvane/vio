@@ -29,9 +29,24 @@ describe('router', () => {
                     ['/abc/def']
                 ],
                 [
+                    'abc/abc.js',
+                    undefined,
+                    ['/abc']
+                ],
+                [
                     'abc.js',
                     'def',
                     ['/abc/def']
+                ],
+                [
+                    'abc/abc.js',
+                    'def',
+                    ['/abc/def']
+                ],
+                [
+                    'abc/def/def.js',
+                    'ghi',
+                    ['/abc/def/ghi']
                 ],
                 [
                     'abc/def.js',
