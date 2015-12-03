@@ -13,7 +13,12 @@ export interface RouterOptions {
 export enum HttpMethod {
     all,
     get,
-    post
+    post,
+    put,
+    delete,
+    fetch,
+    head,
+    options
 }
 
 export interface ControllerOptions {
@@ -34,7 +39,7 @@ export abstract class Controller {
     }
 }
 
-export interface RouteOptions {
+export interface RouteOptions<TPermission> {
     /**
      * Path that will be appended to parent.
      * 
@@ -48,6 +53,9 @@ export interface RouteOptions {
     view?: string;
     /** Require authentication. */
     authentication?: boolean;
+    /** Permission descriptor. */
+    permission?: PermissionDescriptor<TPermission>;
+    permissions?: PermissionDescriptor<TPermission>[];
 }
 
 export interface Route {
@@ -71,7 +79,7 @@ export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse
 
 
 /** @decoraotr */
-export function route(method: string | HttpMethod, options: RouteOptions) {
+export function route<TPermission>(method: string | HttpMethod, options: RouteOptions<TPermission> = {}) {
     return (ControllerClass: typeof Controller, name: string) => {
         if (!ControllerClass.routes) {
             ControllerClass.routes = new Map<string, Route>();
@@ -91,7 +99,13 @@ export function route(method: string | HttpMethod, options: RouteOptions) {
             methodName = HttpMethod[method];
         }
         
-        let { path, view, authentication = false } = options;
+        let {
+            path,
+            view,
+            authentication = false,
+            permission,
+            permissions
+        } = options;
         
         if (!path && name !== 'default') {
             path = hyphenate(name);
@@ -104,16 +118,22 @@ export function route(method: string | HttpMethod, options: RouteOptions) {
             handler,
             authentication
         });
+        
+        let permissionDescriptor = permission ?
+            permission : permissions ?
+            new CompoundOrPermissionDescriptor(permissions) : undefined;
+        
+        ControllerClass.permissionDescriptors.set(name, permissionDescriptor);
     };
 }
 
 /** @decorator */
-export function get(options = <RouteOptions>{}) {
+export function get<TPermission>(options?: RouteOptions<TPermission>) {
     return route(HttpMethod.get, options);
 }
 
 /** @decorator */
-export function post(options = <RouteOptions>{}) {
+export function post<TPermission>(options?: RouteOptions<TPermission>) {
     return route(HttpMethod.post, options);
 }
 
@@ -170,21 +190,6 @@ export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> 
         
         return true;
     }
-}
-
-/** @decoraotr */
-export function permission<T>(...descriptors: PermissionDescriptor<T>[]) {
-    let descriptor = descriptors.length === 1 ?
-        descriptors[0] :
-        new CompoundOrPermissionDescriptor(descriptors);
-    
-    return (ControllerClass: typeof Controller, name: string) => {
-        if (!ControllerClass.permissionDescriptors) {
-            ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
-        }
-        
-        ControllerClass.permissionDescriptors.set(name, descriptor);
-    };
 }
 
 export interface RequestUser<TPermission> {

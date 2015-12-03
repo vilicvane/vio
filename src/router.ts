@@ -578,18 +578,28 @@ ${route.handler.toString()}`);
     }
     
     private handleNotFound(req: ExpressRequest, res: ExpressResponse): void {
-        this.renderErrorPage(req, res, 404);
+        this.renderErrorPage(req, res, new APIError(APIErrorCode.none, 'Page not Found.', 404));
     }
     
     private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error, hasView: boolean): void {
         if (hasView) {
-            this.renderErrorPage(req, res, 500);
+            let apiError: APIError;
+            
+            if (error instanceof APIError) {
+                apiError = error;
+            } else {
+                apiError = new APIError(APIErrorCode.unknown, undefined, 500);
+            }
+            
+            this.renderErrorPage(req, res, apiError);
         } else {
             new JSONErrorResponse(error).applyTo(res);
         }
     }
     
-    private renderErrorPage(req: ExpressRequest, res: ExpressResponse, status: number): void {
+    private renderErrorPage(req: ExpressRequest, res: ExpressResponse, apiError: APIError): void {
+        let { status, message } = apiError;
+        
         res.status(status);
         
         let viewPath = this.findErrorPageViewPath(req.path, status);
@@ -597,20 +607,16 @@ ${route.handler.toString()}`);
         if (viewPath) {
             res.render(viewPath, {
                 url: req.url,
+                message,
                 status
             });
         } else {
             // TODO: some beautiful default error pages.
             
-            let defaultMessage = status === 404 ?
-                `Page not found.<br />
-Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.` :
-                `Something wrong happened (${status}).<br />
-Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`;
-            
             res
                 .type('text/html')
-                .send(defaultMessage);
+                .send(`${message} (${status}).<br />
+Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`);
         }
     }
     
