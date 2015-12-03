@@ -17,6 +17,7 @@ let router = new Router(app, {
     viewsExtension: '.hbs'
 });
 
+// set up user provider.
 router.userProvider = new DemoUserProvider();
 
 app.listen(1337);
