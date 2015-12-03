@@ -1,4 +1,4 @@
 /.vscode/settings.json
-bld/
+/bld/
 node_modules/
 npm-debug.log
