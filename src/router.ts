@@ -30,6 +30,7 @@ import {
     Response,
     APIError,
     APIErrorCode,
+    APIErrorMessages,
     ErrorTransformer
 } from './';
 
@@ -94,11 +95,10 @@ export class Router {
         {
             routesRoot = './routes',
             viewsRoot = './views',
-            viewsExtension = '.hbs',
+            viewsExtension,
             errorViewsFolder = 'error',
             defaultSubsite,
             prefix,
-            json = false,
             production = PRODUCTION
         }: {
             routesRoot?: string;
@@ -107,7 +107,6 @@ export class Router {
             errorViewsFolder?: string;
             defaultSubsite?: string;
             prefix?: string;
-            json?: boolean;
             production?: boolean;
         } = {}
     ) {
@@ -555,21 +554,17 @@ ${route.handler.toString()}`);
                     });
                 }
             })
-            .fail(reason => {
-                let apiError: APIError;
-                
+            .fail(error => {
                 if (this.errorTransformer) {
-                    apiError = this.errorTransformer(reason) || new APIError(-1);
-                } else if (reason instanceof APIError) {
-                    apiError = reason;
+                    error = this.errorTransformer(error) || error;
                 }
                 
                 if (!res.headersSent) {
-                    this.handleServerError(req, res, apiError && apiError.status);
+                    this.handleServerError(req, res, error);
                 }
                 
-                if (!apiError) {
-                    throw reason;
+                if (!(error instanceof APIError)) {
+                    throw error;
                 }
             })
             .log();
@@ -579,8 +574,33 @@ ${route.handler.toString()}`);
         this.renderErrorPage(req, res, 404);
     }
     
-    private handleServerError(req: ExpressRequest, res: ExpressResponse, status = 500): void {
-        this.renderErrorPage(req, res, status);
+    private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error): void {
+        if (this.viewsExtension) {
+            this.renderErrorPage(req, res, 500);
+        } else {
+            let status: number;
+            let code: number;
+            let message: string;
+            
+            if (error instanceof APIError) {
+                status = error.status;
+                code = error.code;
+                message = error.message;
+            }
+            
+            status = status || 500;
+            code = code || APIErrorCode.unknown;
+            message = message || APIErrorMessages.unknown;
+            
+            res
+                .status(status)
+                .json({
+                    error: {
+                        code,
+                        message
+                    }
+                });
+        }
     }
     
     private renderErrorPage(req: ExpressRequest, res: ExpressResponse, status: number): void {

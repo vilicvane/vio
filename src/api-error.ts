@@ -7,10 +7,12 @@ export class APIError extends Error {
     constructor(
         public code: number,
         message = 'Unknown error.',
-        public status = 500
+        public status = APIError.defaultStatus
     ) {
         super(message);
     }
+    
+    static defaultStatus = 500;
 }
 
 export enum APIErrorCode {
@@ -23,7 +25,11 @@ export enum APIErrorCode {
     unknown = -1
 }
 
+export let APIErrorMessages = {
+    unknown: 'Unkown error.'
+};
+
 /** Error transformer */
 export interface ErrorTransformer {
-    (reason: any): APIError;
+    (reason: any): any;
 }
