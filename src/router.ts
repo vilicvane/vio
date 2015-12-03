@@ -28,6 +28,8 @@ import {
     UserProvider,
     RequestUser,
     Response,
+    JSONDataResponse,
+    JSONErrorResponse,
     APIError,
     APIErrorCode,
     APIErrorMessages,
@@ -543,7 +545,7 @@ ${route.handler.toString()}`);
                 
                 // Handle specified response.
                 if (result instanceof Response) {
-                    result.sendTo(res);
+                    result.applyTo(res);
                 } else if (route.resolvedView) {
                     return new Promise<void>((resolve, reject) => {
                         res.render(route.resolvedView, result, (error, html) => {
@@ -556,9 +558,7 @@ ${route.handler.toString()}`);
                         });
                     });
                 } else {
-                    res.json({
-                        data: result
-                    });
+                    new JSONDataResponse(result).applyTo(res);
                 }
             })
             .fail(error => {
@@ -567,7 +567,7 @@ ${route.handler.toString()}`);
                 }
                 
                 if (!res.headersSent) {
-                    this.handleServerError(req, res, error);
+                    this.handleServerError(req, res, error, !!route.resolvedView);
                 }
                 
                 if (!(error instanceof APIError)) {
@@ -581,32 +581,11 @@ ${route.handler.toString()}`);
         this.renderErrorPage(req, res, 404);
     }
     
-    private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error): void {
-        if (this.viewsExtension) {
+    private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error, hasView: boolean): void {
+        if (hasView) {
             this.renderErrorPage(req, res, 500);
         } else {
-            let status: number;
-            let code: number;
-            let message: string;
-            
-            if (error instanceof APIError) {
-                status = error.status;
-                code = error.code;
-                message = error.message;
-            }
-            
-            status = status || 500;
-            code = code || APIErrorCode.unknown;
-            message = message || APIErrorMessages.unknown;
-            
-            res
-                .status(status)
-                .json({
-                    error: {
-                        code,
-                        message
-                    }
-                });
+            new JSONErrorResponse(error).applyTo(res);
         }
     }
     

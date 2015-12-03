@@ -3,13 +3,15 @@
  */
 export class APIError extends Error {
     name = (this.constructor as any).name;
+    stack: string;
     
     constructor(
         public code: number,
-        message = 'Unknown error.',
+        public message = APIErrorMessages[code] || APIErrorMessages[APIErrorCode.unknown],
         public status = APIError.defaultStatus
     ) {
         super(message);
+        this.stack = (new Error() as any).stack.replace(/\s+at new APIError .+/, '');
     }
     
     static defaultStatus = 500;
@@ -25,8 +27,10 @@ export enum APIErrorCode {
     unknown = -1
 }
 
-export let APIErrorMessages = {
-    unknown: 'Unkown error.'
+export let APIErrorMessages: {
+    [code: number]: string;
+} = {
+    [APIErrorCode.unknown]: 'Unkown error.'
 };
 
 /** Error transformer */

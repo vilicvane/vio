@@ -2,6 +2,12 @@ import { Readable } from 'stream';
 
 import { Response as ExpressResponse } from 'express';
 
+import {
+    APIError,
+    APIErrorCode,
+    APIErrorMessages
+} from './';
+
 export class Response {
     constructor(
         public type: string,
@@ -9,7 +15,7 @@ export class Response {
         public status = 200
     ) { }
     
-    sendTo(res: ExpressResponse): void {
+    applyTo(res: ExpressResponse): void {
         res
             .status(this.status)
             .type(this.type);
@@ -24,8 +30,62 @@ export class Response {
     }
 }
 
-export class JSONResponse extends Response {
-    constructor(data: any, status?: number) {
-        super('application/json', JSON.stringify(data), status);
+export class Redirect extends Response {
+    constructor(
+        public url: string,
+        status = 302
+    ) {
+        super(undefined, undefined, status);
+    }
+    
+    applyTo(res: ExpressResponse): void {
+        res.redirect(this.url, this.status);
+    }
+}
+
+export class JSONResponse<T> extends Response {
+    constructor(data: T, status?: number) {
+        let json = JSON.stringify(data);
+        super('application/json', json, status);
+    }
+}
+
+export class JSONDataResponse<T> extends Response {
+    constructor(data: T, status?: number) {
+        let json = JSON.stringify({ data });
+        super('application/json', json, status);
+    }
+}
+
+export class JSONErrorResponse extends Response {
+    constructor(error: any, status?: number) {
+        let code: number;
+        let message: string;
+        
+        if (error instanceof APIError) {
+            status = status || error.status;
+            code = error.code;
+            message = error.message;
+        }
+        
+        status = status || 500;
+        code = code || APIErrorCode.unknown;
+        message = message || APIErrorMessages[code] || APIErrorMessages[APIErrorCode.unknown];
+        
+        let json = JSON.stringify({
+            error: {
+                code,
+                message
+            }
+        });
+        
+        super('application/json', json, status);
+    }
+}
+
+export class JSONRedirect extends Response {
+    constructor(url: string, status?: number) {
+        let json = JSON.stringify({ redirect: url });
+        super('application/json', json, status);
     }
 }
