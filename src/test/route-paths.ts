@@ -34,6 +34,11 @@ describe('router', () => {
                     ['/abc']
                 ],
                 [
+                    'abc/abc/abc.js',
+                    undefined,
+                    ['/abc/abc']
+                ],
+                [
                     'abc.js',
                     'def',
                     ['/abc/def']
@@ -47,6 +52,11 @@ describe('router', () => {
                     'abc/def/def.js',
                     'ghi',
                     ['/abc/def/ghi']
+                ],
+                [
+                    'abc/def/def/def.js',
+                    'ghi',
+                    ['/abc/def/def/ghi']
                 ],
                 [
                     'abc/def.js',

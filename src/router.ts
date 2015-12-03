@@ -349,7 +349,14 @@ ${error.stack}`);
             parts[lastIndex] = parts[lastIndex].replace(/\.js$/gi, '');
         }
         
-        if (parts.length && parts[parts.length - 1] === 'default') {
+        if (
+            parts.length && (
+                parts[parts.length - 1] === 'default' || (
+                    parts.length >= 2 &&
+                    parts[parts.length - 1] === parts[parts.length - 2]
+                )
+            )
+        ) {
             parts.pop();
         }
         
@@ -409,15 +416,6 @@ ${error.stack}`);
     
     private getPossibleRoutePaths(routeFilePath: string, routePath: string): string[] {
         let pathParts = Router.splitRouteFilePath(routeFilePath);
-        
-        // some path like `abc/abc.js`.
-        // `.js` has already been taken out by `splitRouteFilePath`.
-        let filenameDoubled = pathParts.length >= 2 &&
-            pathParts[pathParts.length - 1] === pathParts[pathParts.length - 2];
-        
-        if (filenameDoubled) {
-            pathParts.pop();
-        }
         
         let firstPart = pathParts.shift();
         // could be undefined if only one part (filename).
