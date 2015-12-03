@@ -59,7 +59,7 @@ You may configure tasks using [gulp](http://gulpjs.com/) or other tools.
 VIO is developed in [TypeScript](http://www.typescriptlang.org/).
 As it's using new ECMAScript features, you will need to use compiler or transpiler like TypeScript or [Babel](https://babeljs.io/).
 
-For minimum demo in TypeScript, please check out https://github.com/vilic/vio-minimum-demo.
+For minimum demo in TypeScript, please check out [vio-minimum-demo](https://github.com/vilic/vio-minimum-demo).
 
 ## Features
 
@@ -155,7 +155,7 @@ npm install
 # start node.
 node bld/index.js
 
-# visit http://localhost:1337.
+# visit http://localhost:1337/.
 ```
 
 ## Dynamic Loading
