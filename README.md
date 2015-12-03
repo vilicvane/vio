@@ -14,7 +14,7 @@ Take the view matching rule as example, it's a balance of how you wish you can p
 
 An actual example including suggested file structure **would** introduce extra build steps. Of it would, as VIO is designed for **real-world** Node.js projects.
 
-But it could be something like this:
+It could be something like this:
 
 ```text
 project
