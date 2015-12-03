@@ -76,7 +76,7 @@ Install VIO.
 npm install vio --save
 ```
 
-Install a view engine (here we use `handlebars` with `consolidate`).
+Install a view engine (here we use [handlebars](http://handlebarsjs.com/) with [consolidate](https://github.com/tj/consolidate.js)).
 
 ```sh
 npm install handlebars consolidate --save
