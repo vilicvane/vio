@@ -1,6 +1,6 @@
 {
   "name": "vio",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "VIO Framework",
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
