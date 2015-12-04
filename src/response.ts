@@ -30,7 +30,7 @@ export class Response {
     }
 }
 
-export class Redirect extends Response {
+export class Redirection extends Response {
     constructor(
         public url: string,
         status = 302
@@ -83,9 +83,9 @@ export class JSONErrorResponse extends Response {
     }
 }
 
-export class JSONRedirect extends Response {
+export class JSONRedirection extends Response {
     constructor(url: string, status?: number) {
-        let json = JSON.stringify({ redirect: url });
+        let json = JSON.stringify({ location: url });
         super('application/json', json, status);
     }
 }
