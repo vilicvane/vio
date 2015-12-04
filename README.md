@@ -82,6 +82,8 @@ Install a view engine (here we use [handlebars](http://handlebarsjs.com/) with [
 npm install handlebars consolidate --save
 ```
 
+Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it seems to be something you would want.
+
 ## Usage
 
 **src/server.js**
