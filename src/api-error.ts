@@ -30,7 +30,7 @@ export enum APIErrorCode {
 export let APIErrorMessages: {
     [code: number]: string;
 } = {
-    [APIErrorCode.unknown]: 'Unkown error.',
+    [APIErrorCode.unknown]: 'Unknown error.',
     [APIErrorCode.permissionDenied]: 'Permission denied.'
 };
 

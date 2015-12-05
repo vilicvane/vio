@@ -15,6 +15,18 @@
         },
         {
             "method": "get",
+            "path": "/",
+            "description": "should get 200 with view again",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "text/html",
+                    "content": "default"
+                }
+            }
+        },
+        {
+            "method": "get",
             "path": "/list",
             "description": "should get 200 as json",
             "expected": {
@@ -72,6 +84,32 @@
                     "status": 500,
                     "contentType": "text/html",
                     "content": "html 500"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/ouch",
+            "description": "should get 500 with default view",
+            "expected": {
+                "all": {
+                    "status": 500,
+                    "contentType": "text/html",
+                    "content": "Unknown error"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/module-cache",
+            "description": "should get true",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "application/json",
+                    "content": {
+                        "data": true
+                    }
                 }
             }
         }

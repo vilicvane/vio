@@ -42,9 +42,9 @@ Module._extensions['.js'] = (module, filename) => {
         return originalJSResolver(module, filename);
     }
     
-    let content = stripBOM(FS.readFileSync(filename, 'utf8'));
+    let content = FS.readFileSync(filename, 'utf-8');
     
-    // inject vio require.
+    content = stripBOM(content);
     content = `require = require(${JSON.stringify(__filename)})(require, module);${content}`;
     
     module._compile(content, filename);

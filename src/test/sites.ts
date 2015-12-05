@@ -66,6 +66,14 @@ describe('sites', () => {
             
                 after(() => {
                     server.close();
+                    
+                    let cache = require.cache;
+                    
+                    for (let path of Object.keys(cache)) {
+                        if (/(?:[\\/]modules|-routes)[\\/]/.test(path)) {
+                            delete cache[path];
+                        }
+                    }
                 });
                 
                 for (let test of tests) {
