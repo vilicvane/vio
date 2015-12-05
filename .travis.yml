@@ -4,4 +4,5 @@ node_js:
   - "5"
 before_script:
   - npm run build
-  
+after_script:
+  - npm run coveralls
