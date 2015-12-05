@@ -68,6 +68,8 @@ For minimum demo in TypeScript, please check out [vio-minimum-demo](https://gith
 - Return a promise with data to render the view.
 - Use ES7 decorators to specify route handlers.
 
+Checkout [wiki](https://github.com/vilic/vio/wiki) for examples.
+
 ## Install
 
 Install VIO.
