@@ -192,7 +192,7 @@ Taking a better editor navigation experience and file structure into considerati
 
 Unlike development mode with dynamic loading, production mode loads all routes when process starts and will not care about file changes.
 
-To enable production mode for testing purpose, set environment variable `NODE_ENV` to `production`.
+To enable production mode for testing purpose, set environment variable `NODE_ENV` to `"production"`.
 
 ## License
 
