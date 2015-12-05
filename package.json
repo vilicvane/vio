@@ -1,7 +1,7 @@
 {
   "name": "vio",
-  "version": "0.1.11",
-  "description": "VIO Framework",
+  "version": "0.1.12",
+  "description": "An express \"endware\" that takes your feelings into consideration.",
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
   "scripts": {
