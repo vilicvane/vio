@@ -191,7 +191,7 @@ export class Router {
         let modulePath = Path.join(this.routesRoot, routeFilePath);
         
         // TODO: error handling
-        let ControllerClass: typeof Controller = require(modulePath).default;
+        let ControllerClass = Router.getControllerClass(require(modulePath));
         
         this.attachRoutesOnController(ControllerClass, routeFilePath);
     }
@@ -313,7 +313,7 @@ export class Router {
         
         try {
             // we use the `exports.default` as the target controller class.
-            ControllerClass = vioRequire(resolvedRouteFilePath).default;
+            ControllerClass = Router.getControllerClass(vioRequire(resolvedRouteFilePath));
         } catch (error) {
             console.warn(`Failed to load route module "${resolvedRouteFilePath}".
 ${error.stack}`);
@@ -338,43 +338,6 @@ ${error.stack}`);
     ////////////
     // COMMON //
     ////////////
-    
-    private static splitRoutePath(path: string): string[] {
-        return Router.splitPath(path, /\/?([^/?*+:]+)|/g);
-    }
-    
-    private static splitRouteFilePath(path: string): string[] {
-        let parts: string[] = path.match(/[^\\/]+/g) || [];
-        
-        if (parts.length) {
-            let lastIndex = parts.length - 1;
-            parts[lastIndex] = parts[lastIndex].replace(/\.js$/gi, '');
-        }
-        
-        if (
-            parts.length && (
-                parts[parts.length - 1] === 'default' || (
-                    parts.length >= 2 &&
-                    parts[parts.length - 1] === parts[parts.length - 2]
-                )
-            )
-        ) {
-            parts.pop();
-        }
-        
-        return parts;
-    }
-    
-    private static splitPath(path: string, regex: RegExp): string[] {
-        let part: string;
-        let parts: string[] = [];
-        
-        while (part = regex.exec(path)[1]) {
-            parts.push(part);
-        }
-        
-        return parts;
-    }
     
     private attachRoutesOnController(ControllerClass: typeof Controller, routeFilePath: string): void {
         let routes = ControllerClass && ControllerClass.routes;
@@ -654,6 +617,47 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
         }
         
         return this.defaultSubsite;
+    }
+    
+    private static splitRoutePath(path: string): string[] {
+        return Router.splitPath(path, /\/?([^/?*+:]+)|/g);
+    }
+    
+    private static splitRouteFilePath(path: string): string[] {
+        let parts: string[] = path.match(/[^\\/]+/g) || [];
+        
+        if (parts.length) {
+            let lastIndex = parts.length - 1;
+            parts[lastIndex] = parts[lastIndex].replace(/\.js$/gi, '');
+        }
+        
+        if (
+            parts.length && (
+                parts[parts.length - 1] === 'default' || (
+                    parts.length >= 2 &&
+                    parts[parts.length - 1] === parts[parts.length - 2]
+                )
+            )
+        ) {
+            parts.pop();
+        }
+        
+        return parts;
+    }
+    
+    private static splitPath(path: string, regex: RegExp): string[] {
+        let part: string;
+        let parts: string[] = [];
+        
+        while (part = regex.exec(path)[1]) {
+            parts.push(part);
+        }
+        
+        return parts;
+    }
+    
+    private static getControllerClass(module: any): typeof Controller {
+        return module.routes ? module : module.default;
     }
 }
 

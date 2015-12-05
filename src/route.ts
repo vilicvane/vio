@@ -80,13 +80,13 @@ export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse
 
 /** @decoraotr */
 export function route<TPermission>(method: string | HttpMethod, options: RouteOptions<TPermission> = {}) {
-    return (ControllerClass: typeof Controller, name: string) => {
+    return (ControllerClass: typeof Controller, name: string, descriptor: PropertyDescriptor) => {
         if (!ControllerClass.routes) {
             ControllerClass.routes = new Map<string, Route>();
             ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
         }
         
-        let handler: RouteHandler = (<any>ControllerClass)[name].bind(ControllerClass);
+        let handler: RouteHandler = descriptor.value.bind(ControllerClass);
         
         let methodName: string;
         

@@ -88,7 +88,7 @@ Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it 
 
 ## Usage
 
-**src/server.js**
+**src/server.ts**
 
 ```ts
 import * as Path from 'path';
@@ -110,7 +110,7 @@ let router = new Router(app, {
 app.listen(1337);
 ```
 
-**src/routes/default.js**
+**src/routes/default.ts**
 
 ```ts
 import { Controller, get } from 'vio';
