@@ -5,8 +5,10 @@
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
   "scripts": {
+    "coveralls": "cat coverage/lcov.info | coveralls",
     "build": "tsc",
-    "test": "mocha"
+    "test": "istanbul cover node_modules/mocha/bin/_mocha",
+    "posttest": "istanbul check-coverage --statements 80 --functions 80 --branches 60 --lines 80"
   },
   "repository": {
     "type": "git",
@@ -36,7 +38,9 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "consolidate": "^0.13.1",
+    "coveralls": "^2.11.4",
     "handlebars": "^4.0.5",
+    "istanbul": "^1.0.0-alpha.2",
     "mocha": "^2.3.4",
     "request": "^2.67.0",
     "source-map-support": "^0.3.3",

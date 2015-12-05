@@ -1,4 +1,7 @@
-# VIO [![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio)
+[![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio) 
+[![Coverage Status](https://coveralls.io/repos/vilic/vio/badge.svg?branch=master&service=github)](https://coveralls.io/github/vilic/vio?branch=master)
+
+# VIO
 
 An [express](http://expressjs.com/) "endware" that takes your feelings into consideration.
 
