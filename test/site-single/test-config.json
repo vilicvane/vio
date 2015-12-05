@@ -1,0 +1,79 @@
+{
+    "viewsExtension": ".hbs",
+    "tests": [
+        {
+            "method": "get",
+            "path": "/",
+            "description": "should get 200 with view",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "text/html",
+                    "content": "default"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/list",
+            "description": "should get 200 as json",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "application/json",
+                    "content": {
+                        "data": "list"
+                    }
+                }
+            }
+        },
+        {
+            "method": "post",
+            "path": "/u/vilicvane",
+            "description": "should get 200 with param as json",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "application/json",
+                    "content": {
+                        "data": "vilicvane"
+                    }
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/u/vilicvane",
+            "description": "should get 404 for unmatched http method",
+            "expected": {
+                "all": {
+                    "status": 404
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/user/home",
+            "description": "should get 200 with view",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "text/html",
+                    "content": "user-home"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/oops",
+            "description": "should get 500 with default view",
+            "expected": {
+                "all": {
+                    "status": 500,
+                    "contentType": "text/html",
+                    "content": "html 500"
+                }
+            }
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-import { Controller, Request, get, post } from '../../';
+import { Controller, Request, APIError, get, post } from '../../';
 
 export default class DefaultController extends Controller {
     @get()
@@ -18,5 +18,10 @@ export default class DefaultController extends Controller {
     })
     static user(req: Request<any>) {
         return req.params['user'];
+    }
+    
+    @get()
+    static oops() {
+        throw new APIError(0, 'html 500');
     }
 }

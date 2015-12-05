@@ -1,0 +1,66 @@
+{
+    "defaultSubsite": "desktop",
+    "viewsExtension": ".hbs",
+    "tests": [
+        {
+            "method": "get",
+            "path": "/",
+            "description": "should get 200 with view",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "text/html",
+                    "content": "desktop home"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/desktop",
+            "description": "should get 200 with view",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "text/html",
+                    "content": "desktop home"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/404",
+            "description": "should get 404 with custom view",
+            "expected": {
+                "all": {
+                    "status": 404,
+                    "contentType": "text/html",
+                    "content": "desktop custom 40x"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/500",
+            "description": "should get 500 with custom view",
+            "expected": {
+                "all": {
+                    "status": 500,
+                    "contentType": "text/html",
+                    "content": "desktop custom 500"
+                }
+            }
+        },
+        {
+            "method": "get",
+            "path": "/mobile/not-exists",
+            "description": "should get 404 with custom view",
+            "expected": {
+                "all": {
+                    "status": 404,
+                    "contentType": "text/html",
+                    "content": "common custom 40x"
+                }
+            }
+        }
+    ]
+}

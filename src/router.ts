@@ -91,6 +91,8 @@ export class Router {
     errorTransformer: ErrorTransformer;
     /** User provider. */
     userProvider: UserProvider<RequestUser<any>>;
+    /** Whether running under production mode. */
+    production: boolean;
     
     constructor(
         app: Express,
@@ -146,6 +148,7 @@ export class Router {
         
         this.prefix = prefix;
         this.router = ExpressRouter();
+        this.production = production;
         
         if (production) {
             this.attachRoutes();
@@ -339,6 +342,22 @@ ${error.stack}`);
     // COMMON //
     ////////////
     
+    private pathExistenceCache = new Map<string, boolean>();
+    
+    private fsExistsSync(path: string): boolean {
+        if (this.production) {
+            if (this.pathExistenceCache.has(path)) {
+                return this.pathExistenceCache.get(path);
+            } else {
+                let exists = FS.existsSync(path);
+                this.pathExistenceCache.set(path, exists);
+                return exists;
+            }
+        } else {
+            return FS.existsSync(path);
+        }
+    }
+    
     private attachRoutesOnController(ControllerClass: typeof Controller, routeFilePath: string): void {
         let routes = ControllerClass && ControllerClass.routes;
         
@@ -430,7 +449,7 @@ ${error.stack}`);
         let possibleViewPaths = this.getPossibleViewPaths(routeFilePath, route.path);
         
         for (let possibleViewPath of possibleViewPaths) {
-            if (FS.existsSync(possibleViewPath)) {
+            if (this.fsExistsSync(possibleViewPath)) {
                 return possibleViewPath;
             }
         }
@@ -594,10 +613,19 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
         ];
         
         for (let fileName of possibleFileNames) {
-            let viewPath = Path.resolve(this.viewsRoot, subsiteName, this.errorViewsFolder, fileName);
+            let viewPath = Path.join(this.errorViewsFolder, fileName);
             
-            if (FS.existsSync(viewPath)) {
-                return viewPath;
+            let possiblePaths = subsiteName ? [
+                Path.resolve(this.viewsRoot, subsiteName, viewPath),
+                Path.resolve(this.viewsRoot, viewPath)
+            ] : [
+                Path.resolve(this.viewsRoot, viewPath)
+            ];
+            
+            for (let path of possiblePaths) {
+                if (this.fsExistsSync(path)) {
+                    return path;
+                }
             }
         }
         
@@ -611,7 +639,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
             let subsiteDir = Path.join(this.routesRoot, part);
             
             // cache in production mode
-            if (FS.existsSync(subsiteDir)) {
+            if (this.fsExistsSync(subsiteDir)) {
                 return part.substr(1);
             }
         }

@@ -24,6 +24,12 @@ interface TestExpectation {
     content: string | Object;
 }
 
+interface TestConfig {
+    defaultSubsite: string;
+    viewsExtension: string;
+    tests: Test[];
+}
+
 describe('sites', () => {
     let siteRoutesDirnames = glob.sync('site-*-routes', {
         cwd: __dirname
@@ -37,6 +43,12 @@ describe('sites', () => {
                 
                 let baseUrl = `http://localhost:${port}`;
                 let testPath = Path.join(__dirname, '../../test', siteRoutesDirname.replace(/-routes$/, ''));
+                
+                let {
+                    defaultSubsite,
+                    viewsExtension,
+                    tests
+                } = require(Path.join(testPath, 'test-config.json')) as TestConfig;
             
                 before(() => {
                     let app = createExpressApp();
@@ -44,7 +56,8 @@ describe('sites', () => {
                     let router = new Router(app, {
                         routesRoot: Path.join(__dirname, siteRoutesDirname),
                         viewsRoot: Path.join(testPath, 'views'),
-                        viewsExtension: '.hbs',
+                        viewsExtension,
+                        defaultSubsite,
                         production
                     });
                     
@@ -55,10 +68,8 @@ describe('sites', () => {
                     server.close();
                 });
                 
-                let tests = require(Path.join(testPath, 'tests.json')) as Test[];
-                
                 for (let test of tests) {
-                    it(test.description, () => {
+                    it(`"${test.path}" ${test.description}`, () => {
                         let expectation = test.expected.all || (
                             production ?
                                 test.expected.production :
@@ -85,7 +96,4 @@ describe('sites', () => {
             });
         }
     }
-    
-    
 });
-
