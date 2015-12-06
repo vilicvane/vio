@@ -73,24 +73,34 @@ const hop: HOP = Object.prototype.hasOwnProperty;
 export class Router {
     /** Root of route files on file system, ends without '/'. */
     routesRoot: string;
+    
     /** Root of views files on file system, ends without '/'. */
     viewsRoot: string;
+    
     /** Extension of view files. */
     viewsExtension: string;
+    
     /** Error view files folder name. */
     errorViewsFolder: string;
+    
     /** Default sub site. */
     defaultSubsite: string;
+    
     /** Prefix of requesting path, starts with '/' but ends without '/'. */
     prefix: string;
+    
     /** Express application. */
     app: _Express;
+    
     /** Actual router behind the scence. */
     router: ExpressRouter;
+    
     /** Error transformer. */
     errorTransformer: ErrorTransformer;
+    
     /** User provider. */
     userProvider: UserProvider<RequestUser<any>>;
+    
     /** Whether running under production mode. */
     production: boolean;
     
