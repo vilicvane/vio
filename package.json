@@ -1,6 +1,6 @@
 {
   "name": "vio",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "An express \"endware\" that takes your feelings into consideration.",
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
