@@ -105,7 +105,9 @@ export function route<TPermission>(method: string | HttpMethod, options: RouteOp
         } = options;
         
         if (!path && name !== 'default') {
-            path = hyphenate(name);
+            path = hyphenate(name, {
+                lowerCase: true
+            });
         }
         
         let permissionDescriptor = permission ?

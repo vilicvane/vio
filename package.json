@@ -29,7 +29,7 @@
     "chalk": "^1.1.1",
     "express": "^4.13.3",
     "glob": "^6.0.1",
-    "hyphenate": "^0.1.1",
+    "hyphenate": "^0.2.1",
     "thenfail": "^0.3.9"
   },
   "devDependencies": {
