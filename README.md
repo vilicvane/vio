@@ -1,3 +1,4 @@
+[![NPM Package](https://badge.fury.io/js/vio.svg)](https://www.npmjs.com/package/vio)
 [![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio) 
 [![Coverage Status](https://coveralls.io/repos/vilic/vio/badge.svg?branch=master&service=github)](https://coveralls.io/github/vilic/vio?branch=master)
 
