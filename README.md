@@ -14,9 +14,9 @@ An [express](http://expressjs.com/) "endware" that takes your feelings into cons
 
 VIO is a small piece of the greater thing. Rather than a framework, it's more like a light-weight implementation that takes how a maintainable site structure should be like into consideration.
 
-Take the view matching rule as example, it's a balance of how you wish you can put and name view components during design time.
+Take the view matching rule as example, it's a balance of how you might wish to put and name view components during design time.
 
-An actual example including suggested file structure **would** introduce extra build steps. Of it would, as VIO is designed for **real-world** Node.js projects.
+An actual example including suggested file structure **would** introduce extra build steps. Of course it would, as VIO is designed for **real-world** Node.js projects.
 
 It could be something like this:
 
