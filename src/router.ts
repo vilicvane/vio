@@ -375,7 +375,7 @@ ${error.stack}`);
         route.resolvedView = this.resolveViewPath(routeFilePath, route);
         
         let router = this.router;
-        let methodName = route.methodName;
+        let methodName = route.method;
         let routeHandler = this.createRouteHandler(route);
         
         let possibleRoutePaths = this.getPossibleRoutePaths(routeFilePath, route.path);

@@ -10,16 +10,9 @@ export interface RouterOptions {
     prefix: string;
 }
 
-export enum HttpMethod {
-    all,
-    get,
-    post,
-    put,
-    delete,
-    fetch,
-    head,
-    options
-}
+// TODO: use string literal type.
+// export type HttpMethod = 'all' | 'get' | 'post' | 'put' | 'delete' | 'fetch' | 'head' | 'options';
+export type HttpMethod = string;
 
 export interface ControllerOptions {
     
@@ -58,7 +51,7 @@ export interface RouteOptions<TPermission> {
 }
 
 export interface Route {
-    methodName: string;
+    method: string;
     path: string;
     view: string;
     resolvedView?: string;
@@ -77,24 +70,13 @@ export type ExpressResponse = express.Response;
 export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse) => any;
 
 /** @decoraotr */
-export function route<TPermission>(method: string | HttpMethod, options: RouteOptions<TPermission> = {}) {
+export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPermission> = {}) {
     return (ControllerClass: typeof Controller, name: string, descriptor: PropertyDescriptor) => {
         if (!ControllerClass.routes) {
             ControllerClass.routes = new Map<string, Route>();
         }
         
         let handler: RouteHandler = descriptor.value.bind(ControllerClass);
-        
-        let methodName: string;
-        
-        if (typeof method === 'string') {
-            methodName = method.toLowerCase();
-            if (!hop.call(HttpMethod, methodName)) {
-                throw new Error(`Unsupported HTTP method "${method}"`);
-            }
-        } else {
-            methodName = HttpMethod[method];
-        }
         
         let {
             path,
@@ -115,7 +97,7 @@ export function route<TPermission>(method: string | HttpMethod, options: RouteOp
             new CompoundOrPermissionDescriptor(permissions) : undefined;
         
         ControllerClass.routes.set(name, {
-            methodName,
+            method,
             path,
             view,
             handler,
@@ -127,12 +109,12 @@ export function route<TPermission>(method: string | HttpMethod, options: RouteOp
 
 /** @decorator */
 export function get<TPermission>(options?: RouteOptions<TPermission>) {
-    return route(HttpMethod.get, options);
+    return route('get', options);
 }
 
 /** @decorator */
 export function post<TPermission>(options?: RouteOptions<TPermission>) {
-    return route(HttpMethod.post, options);
+    return route('post', options);
 }
 
 // /** @decorator */
