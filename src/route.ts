@@ -29,7 +29,6 @@ export abstract class Controller {
     static expired: boolean;
     static options: ControllerOptions;
     
-    static permissionDescriptors: Map<string, PermissionDescriptor<any>>;
     static routes: Map<string, Route>;
     
     static expire(): void {
@@ -77,13 +76,11 @@ export type ExpressResponse = express.Response;
 
 export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse) => any;
 
-
 /** @decoraotr */
 export function route<TPermission>(method: string | HttpMethod, options: RouteOptions<TPermission> = {}) {
     return (ControllerClass: typeof Controller, name: string, descriptor: PropertyDescriptor) => {
         if (!ControllerClass.routes) {
             ControllerClass.routes = new Map<string, Route>();
-            ControllerClass.permissionDescriptors = new Map<string, PermissionDescriptor<any>>();
         }
         
         let handler: RouteHandler = descriptor.value.bind(ControllerClass);
@@ -111,19 +108,18 @@ export function route<TPermission>(method: string | HttpMethod, options: RouteOp
             path = hyphenate(name);
         }
         
+        let permissionDescriptor = permission ?
+            permission : permissions ?
+            new CompoundOrPermissionDescriptor(permissions) : undefined;
+        
         ControllerClass.routes.set(name, {
             methodName,
             path,
             view,
             handler,
-            authentication
+            authentication,
+            permissionDescriptor
         });
-        
-        let permissionDescriptor = permission ?
-            permission : permissions ?
-            new CompoundOrPermissionDescriptor(permissions) : undefined;
-        
-        ControllerClass.permissionDescriptors.set(name, permissionDescriptor);
     };
 }
 

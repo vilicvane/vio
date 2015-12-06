@@ -366,13 +366,7 @@ ${error.stack}`);
             return;
         }
         
-        let permissionDescriptors = ControllerClass.permissionDescriptors;
-        
         routes.forEach((route, name) => {
-            if (permissionDescriptors) {
-                route.permissionDescriptor = permissionDescriptors.get(name);
-            }
-            
             this.attachSingleRoute(routeFilePath, route);
         });
     }
