@@ -6,6 +6,7 @@ import * as express from 'express';
 
 import { Router } from '../';
 import { createExpressApp, request } from './helpers';
+import { TestUserProvider } from './modules/user-provider';
 
 interface Test {
     method: string;
@@ -27,6 +28,7 @@ interface TestExpectation {
 interface TestConfig {
     defaultSubsite: string;
     viewsExtension: string;
+    userProvider: boolean;
     tests: Test[];
 }
 
@@ -47,8 +49,9 @@ describe('sites', () => {
                 let {
                     defaultSubsite,
                     viewsExtension,
+                    userProvider: toUseUserProvider,
                     tests
-                } = require(Path.join(testPath, 'test-config.json')) as TestConfig;
+                }: TestConfig = require(Path.join(testPath, 'test-config.json'));
             
                 before(() => {
                     let app = createExpressApp();
@@ -60,6 +63,10 @@ describe('sites', () => {
                         defaultSubsite,
                         production
                     });
+                    
+                    if (toUseUserProvider) {
+                        router.userProvider = new TestUserProvider();
+                    }
                     
                     server = app.listen(port);
                 });
