@@ -1,6 +1,6 @@
 {
   "name": "vio",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "An express \"endware\" that takes your feelings into consideration.",
   "main": "bld/index.js",
   "typings": "bld/index.d.ts",
@@ -25,9 +25,6 @@
     "url": "https://github.com/vilic/vio/issues"
   },
   "homepage": "https://github.com/vilic/vio#readme",
-  "peerDependencies": {
-    "thenfail": "^0.3.8"
-  },
   "dependencies": {
     "chalk": "^1.1.1",
     "express": "^4.13.3",
