@@ -92,6 +92,8 @@ Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it 
 
 ## Usage
 
+The following example is in TypeScript. If you are using Babel, the `import` statements will slightly differ. 
+
 **src/server.ts**
 
 ```ts
