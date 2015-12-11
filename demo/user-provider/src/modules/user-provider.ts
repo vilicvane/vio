@@ -7,7 +7,7 @@ import {
 
 // in this example we simply use plain string to specify a permission.
 // in practice it should be something more complex,
-// like a combination of roles and special permissions. 
+// like a combination of roles and privileges. 
 
 export type DemoPermission = string;
 
