@@ -82,10 +82,11 @@ Install VIO.
 npm install vio --save
 ```
 
-Install a view engine (here we use [handlebars](http://handlebarsjs.com/) with [consolidate](https://github.com/tj/consolidate.js)).
+Install a view engine (here we use [handlebars](http://handlebarsjs.com/) with [consolidate](https://github.com/tj/consolidate.js)). And if you are using TypeScript, install related declarations as well.
 
 ```sh
 npm install handlebars consolidate --save
+tsd install express consolidate core-js
 ```
 
 Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it seems to be something you would want.
