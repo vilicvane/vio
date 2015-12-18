@@ -13,7 +13,7 @@ export default class Hello extends Controller {
         };
     }
     
-    // http://localhost:1337/
+    // http://localhost:1337/admin
     @get({
         permission: DemoPermissionDescriptor.admin
     })
