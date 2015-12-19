@@ -84,7 +84,7 @@ Install a view engine (here we use [handlebars](http://handlebarsjs.com/) with [
 
 ```sh
 npm install handlebars consolidate --save
-tsd install express consolidate core-js
+tsd install express consolidate
 ```
 
 Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it seems to be something you would want.
