@@ -1,10 +1,12 @@
 import { Controller, Request, get, post } from '../../../';
 
 export default class DefaultController extends Controller {
+    content = 'user-home';
+    
     @get()
-    static default() {
+    default() {
         return {
-            content: 'user-home'
+            content: this.content
         };
     }
 }

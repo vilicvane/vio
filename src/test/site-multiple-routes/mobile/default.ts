@@ -2,7 +2,7 @@ import { Controller, Request, APIError, get, post } from '../../../';
 
 export default class extends Controller {
     @get()
-    static default() {
+    default() {
         return {
             content: 'mobile home'
         };

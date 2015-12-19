@@ -19,19 +19,29 @@ export interface ControllerOptions {
 }
 
 export abstract class Controller {
-    static expired: boolean;
-    static options: ControllerOptions;
+    expired = false;
+    routes: Route[];
     
-    static routes: Map<string, Route>;
-    
-    static expire(): void {
+    expire(): void {
         this.expired = true;
-        this.options = undefined;
-        this.routes = undefined;
     }
 }
 
-export interface RouteOptions<TPermission> {
+export abstract class Resource {
+    
+}
+
+export interface MethodOptions<TPermission> {
+    /** Specify view path. */
+    view?: string;
+    /** Require authentication. */
+    authentication?: boolean;
+    /** Permission descriptor. */
+    permission?: PermissionDescriptor<TPermission>;
+    permissions?: PermissionDescriptor<TPermission>[];
+}
+
+export interface RouteOptions<TPermission> extends MethodOptions<TPermission> {
     /**
      * Path that will be appended to parent.
      * 
@@ -41,13 +51,6 @@ export interface RouteOptions<TPermission> {
      * 3. :paramA/:paramB
      */
     path?: string;
-    /** Specify view path. */
-    view?: string;
-    /** Require authentication. */
-    authentication?: boolean;
-    /** Permission descriptor. */
-    permission?: PermissionDescriptor<TPermission>;
-    permissions?: PermissionDescriptor<TPermission>[];
 }
 
 export interface Route {
@@ -69,14 +72,14 @@ export type ExpressResponse = express.Response;
 
 export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse) => any;
 
-/** @decoraotr */
+/** @decorator */
 export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPermission> = {}) {
-    return (ControllerClass: typeof Controller, name: string, descriptor: PropertyDescriptor) => {
-        if (!ControllerClass.routes) {
-            ControllerClass.routes = new Map<string, Route>();
+    return (controllerPrototype: Controller, name: string, descriptor: PropertyDescriptor) => {
+        if (!controllerPrototype.routes) {
+            controllerPrototype.routes = [];
         }
         
-        let handler: RouteHandler = descriptor.value.bind(ControllerClass);
+        let handler = descriptor.value;
         
         let {
             path,
@@ -96,14 +99,21 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
             permission : permissions ?
             new CompoundOrPermissionDescriptor(permissions) : undefined;
         
-        ControllerClass.routes.set(name, {
-            method,
+        controllerPrototype.routes.push({
+            method: method.toLowerCase(),
             path,
             view,
             handler,
             authentication,
             permissionDescriptor
         });
+    };
+}
+
+/** @decorator */
+export function method<TPermission>(options?: MethodOptions<TPermission>) {
+    return (controller: Controller, name: string, descriptor: PropertyDescriptor) => {
+        return route(name, options)(controller, 'default', descriptor);
     };
 }
 

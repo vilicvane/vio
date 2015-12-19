@@ -39,7 +39,7 @@ export class Redirection extends Response {
     }
     
     applyTo(res: ExpressResponse): void {
-        res.redirect(this.url, this.status);
+        res.redirect(this.status, this.url);
     }
 }
 

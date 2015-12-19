@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES5",
+        "target": "es5",
         "module": "commonjs",
         "noLib": true,
         "experimentalDecorators": true,
@@ -13,7 +13,6 @@
     },
     "exclude": [
         "bld",
-        "demo",
         "node_modules"
     ]
 }

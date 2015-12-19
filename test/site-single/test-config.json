@@ -78,6 +78,45 @@
         },
         {
             "method": "get",
+            "path": "/user/resource",
+            "description": "should get 200",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "application/json",
+                    "content": {
+                        "data": "get"
+                    }
+                }
+            }
+        },
+        {
+            "method": "post",
+            "path": "/user/resource",
+            "description": "should post 200",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "application/json",
+                    "content": {
+                        "data": "post"
+                    }
+                }
+            }
+        },
+        {
+            "method": "put",
+            "path": "/user/resource",
+            "description": "should put 404",
+            "expected": {
+                "all": {
+                    "status": 404,
+                    "contentType": "text/html"
+                }
+            }
+        },
+        {
+            "method": "get",
             "path": "/oops",
             "description": "should get 500 with default view",
             "expected": {

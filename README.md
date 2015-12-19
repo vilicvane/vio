@@ -63,8 +63,6 @@ You may configure tasks using [gulp](http://gulpjs.com/) or other tools.
 VIO is developed in [TypeScript](http://www.typescriptlang.org/).
 As it's using new ECMAScript features, you will need to use compiler or transpiler like TypeScript or [Babel](https://babeljs.io/).
 
-For minimum demo in TypeScript, please check out [vio-minimum-demo](https://github.com/vilic/vio-minimum-demo).
-
 ## Features
 
 - Map routes and controllers based on file paths.
@@ -123,10 +121,10 @@ app.listen(1337);
 import { Controller, get } from 'vio';
 
 // extends `Controller` class.
-export default class DefaultController extends Controller {
+export default class extends Controller {
     // route as a HTTP GET request.
     @get()
-    static default() {
+    default() {
         // can also be a promise if it's async.
         return {
             title: 'Hello, VIO!',
@@ -154,20 +152,7 @@ export default class DefaultController extends Controller {
 
 Now compile files in `src` into `bld` and run `node bld/server.js` to start the server.
 
-Please checkout the demo folder for more usage. To try a demo:
-
-```sh
-# cd to a demo folder.
-cd demo/single
-
-# install dependencies.
-npm install
-
-# start node.
-node bld/index.js
-
-# visit http://localhost:1337/.
-```
+Please checkout [demos](https://github.com/vilic/vio-demos) for more usage.
 
 ## Dynamic Loading
 

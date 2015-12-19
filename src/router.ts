@@ -369,16 +369,23 @@ ${error.stack}`);
     }
     
     private attachRoutesOnController(ControllerClass: typeof Controller, routeFilePath: string): void {
-        let routes = ControllerClass && ControllerClass.routes;
+        let controller: Controller;
+        let routes: Route[];
+        
+        if (typeof ControllerClass === 'function') {
+            controller = new (<any>ControllerClass)();
+            routes = controller.routes;
+        }
         
         if (!routes) {
             console.error(`module "${routeFilePath}" does not export a valid controller.`);
             return;
         }
         
-        routes.forEach((route, name) => {
+        for (let route of routes) {
+            route.handler = route.handler.bind(controller);
             this.attachSingleRoute(routeFilePath, route);
-        });
+        }
     }
     
     private attachSingleRoute(routeFilePath: string, route: Route): void {

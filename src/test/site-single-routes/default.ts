@@ -25,79 +25,79 @@ import '../../../src/test/modules/bom-test';
 
 export default class DefaultController extends Controller {
     @get()
-    static default() {
+    default() {
         return {
             content: 'default'
         };
     }
     
     @route('get')
-    static list() {
+    list() {
         return 'list';
     }
     
     @post({
         path: 'u/:user'
     })
-    static user(req: Request<any>) {
+    user(req: Request<any>) {
         return req.params['user'];
     }
     
     @get()
-    static oops() {
+    oops() {
         throw new APIError(0, 'html 500');
     }
     
     @get()
-    static ouch() {
+    ouch() {
         throw new APIError(1234);
     }
     
     @get()
-    static moduleCache() {
+    moduleCache() {
         return Test1.foo === Test2.foo;
     }
     
     @get({
         permission: TestPermissionDescriptor.admin
     })
-    static permissionDenied() { }
+    permissionDenied() { }
     
     @get({
         permissions: [TestPermissionDescriptor.admin, TestPermissionDescriptor.user]
     })
-    static permissionGranted() { }
+    permissionGranted() { }
     
     @get({
         permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user)
     })
-    static permissionDeniedAnd() { }
+    permissionDeniedAnd() { }
     
     @get({
         authentication: true,
         permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user)
     })
-    static permissionGrantedAnd() { }
+    permissionGrantedAnd() { }
     
     @get()
-    static redirect() {
+    redirect() {
         return new Redirection('/');
     }
     
     @get()
-    static jsonRedirect() {
+    jsonRedirect() {
         return new JSONRedirection('/');
     }
     
     @get()
-    static jsonResponse() {
+    jsonResponse() {
         return new JSONResponse({
             foo: 'bar'
         });
     }
     
     @get()
-    static streamResponse() {
+    streamResponse() {
         let path = Path.join(__dirname, '../../../src/test/data/stream.txt');
         let stream = FS.createReadStream(path);
         
