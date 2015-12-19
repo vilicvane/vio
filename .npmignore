@@ -5,4 +5,5 @@
 /typings/
 
 .*
+*.js.map
 tsconfig.json
