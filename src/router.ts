@@ -260,9 +260,11 @@ export class Router {
         let firstPathPart = pathParts[0];
         
         if (
-            !firstPathPart || (
-                firstPathPart !== this.defaultSubsite &&
-                !FS.existsSync(Path.join(this.routesRoot, firstPathPart))
+            this.defaultSubsite && (
+                !firstPathPart || (
+                    firstPathPart !== this.defaultSubsite &&
+                    !FS.existsSync(Path.join(this.routesRoot, firstPathPart))
+                )
             )
         ) {
             pathParts.unshift(this.defaultSubsite);
@@ -571,7 +573,7 @@ ${route.handler.toString()}`);
     }
     
     private handleNotFound(req: ExpressRequest, res: ExpressResponse): void {
-        this.renderErrorPage(req, res, new APIError(APIErrorCode.none, 'Page not Found.', 404));
+        this.renderErrorPage(req, res, new APIError(APIErrorCode.none, 'Page not Found', 404));
     }
     
     private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error, hasView: boolean): void {

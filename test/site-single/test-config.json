@@ -117,6 +117,20 @@
         },
         {
             "method": "get",
+            "path": "/hello/world",
+            "description": "should get 200",
+            "expected": {
+                "all": {
+                    "status": 200,
+                    "contentType": "application/json",
+                    "content": {
+                        "data": "abc"
+                    }
+                }
+            }
+        },
+        {
+            "method": "get",
             "path": "/oops",
             "description": "should get 500 with default view",
             "expected": {
