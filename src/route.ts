@@ -19,16 +19,7 @@ export interface ControllerOptions {
 }
 
 export abstract class Controller {
-    expired = false;
     routes: Route[];
-    
-    expire(): void {
-        this.expired = true;
-    }
-}
-
-export abstract class Resource {
-    
 }
 
 export interface MethodOptions<TPermission> {
