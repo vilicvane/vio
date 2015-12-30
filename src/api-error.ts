@@ -1,17 +1,15 @@
+import ExtendableError from 'extendable-error';
+
 /**
  * APIError class.
  */
-export class APIError extends Error {
-    name = (this.constructor as any).name;
-    stack: string;
-    
+export class APIError extends ExtendableError {
     constructor(
         public code: number,
-        public message = APIErrorMessages[code] || APIErrorMessages[APIErrorCode.unknown],
+        message = APIErrorMessages[code] || APIErrorMessages[APIErrorCode.unknown],
         public status = APIError.defaultStatus
     ) {
         super(message);
-        this.stack = (new Error() as any).stack.replace(/\s+at new APIError .+/, '');
     }
     
     static defaultStatus = 500;
