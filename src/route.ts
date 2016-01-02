@@ -103,7 +103,7 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
 
 /** @decorator */
 export function method<TPermission>(options?: MethodOptions<TPermission>) {
-    return (controller: Controller, name: string, descriptor: PropertyDescriptor) => {
+    return (controller: Controller, name: HttpMethod, descriptor: PropertyDescriptor) => {
         return route(name, options)(controller, 'default', descriptor);
     };
 }

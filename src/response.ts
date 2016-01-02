@@ -3,9 +3,9 @@ import { Readable } from 'stream';
 import { Response as ExpressResponse } from 'express';
 
 import {
-    APIError,
-    APIErrorCode,
-    APIErrorMessages
+    ExpectedError,
+    ErrorCode,
+    ErrorMessages
 } from './';
 
 export class Response {
@@ -62,15 +62,15 @@ export class JSONErrorResponse extends Response {
         let code: number;
         let message: string;
         
-        if (error instanceof APIError) {
+        if (error instanceof ExpectedError) {
             status = status || error.status;
             code = error.code;
             message = error.message;
         }
         
         status = status || 500;
-        code = code || APIErrorCode.unknown;
-        message = message || APIErrorMessages[code] || APIErrorMessages[APIErrorCode.unknown];
+        code = code || ErrorCode.unknown;
+        message = message || ErrorMessages[code] || ErrorMessages[ErrorCode.unknown];
         
         let json = JSON.stringify({
             error: {

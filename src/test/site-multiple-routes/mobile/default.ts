@@ -1,4 +1,4 @@
-import { Controller, Request, APIError, get, post } from '../../../';
+import { Controller, get } from '../../../';
 
 export default class extends Controller {
     @get()

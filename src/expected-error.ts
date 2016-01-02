@@ -1,13 +1,13 @@
 import ExtendableError from 'extendable-error';
 
 /**
- * APIError class.
+ * ExpectedError class.
  */
-export class APIError extends ExtendableError {
+export class ExpectedError extends ExtendableError {
     constructor(
         public code: number,
-        message = APIErrorMessages[code] || APIErrorMessages[APIErrorCode.unknown],
-        public status = APIError.defaultStatus
+        message = ErrorMessages[code] || ErrorMessages[ErrorCode.unknown],
+        public status = ExpectedError.defaultStatus
     ) {
         super(message);
     }
@@ -15,7 +15,7 @@ export class APIError extends ExtendableError {
     static defaultStatus = 500;
 }
 
-export enum APIErrorCode {
+export enum ErrorCode {
     none = 0,
     
     // permission error
@@ -25,11 +25,11 @@ export enum APIErrorCode {
     unknown = -1
 }
 
-export let APIErrorMessages: {
+export let ErrorMessages: {
     [code: number]: string;
 } = {
-    [APIErrorCode.unknown]: 'Unknown error.',
-    [APIErrorCode.permissionDenied]: 'Permission denied.'
+    [ErrorCode.unknown]: 'Unknown error.',
+    [ErrorCode.permissionDenied]: 'Permission denied.'
 };
 
 /** Error transformer */

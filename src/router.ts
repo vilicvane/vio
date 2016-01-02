@@ -30,9 +30,9 @@ import {
     Response,
     JSONDataResponse,
     JSONErrorResponse,
-    APIError,
-    APIErrorCode,
-    APIErrorMessages,
+    ExpectedError,
+    ErrorCode,
+    ErrorMessages,
     ErrorTransformer
 } from './';
 
@@ -522,7 +522,7 @@ ${error.stack}`);
                     permissionDescriptor &&
                     !permissionDescriptor.validate(user && user.permission)
                 ) {
-                    throw new APIError(APIErrorCode.permissionDenied, 'Permission denied', 403);
+                    throw new ExpectedError(ErrorCode.permissionDenied, 'Permission denied', 403);
                 }
                 
                 req.user = user;
@@ -565,7 +565,7 @@ ${route.handler.toString()}`);
                     this.handleServerError(req, res, error, !!route.resolvedView);
                 }
                 
-                if (!(error instanceof APIError)) {
+                if (!(error instanceof ExpectedError)) {
                     throw error;
                 }
             })
@@ -573,27 +573,27 @@ ${route.handler.toString()}`);
     }
     
     private handleNotFound(req: ExpressRequest, res: ExpressResponse): void {
-        this.renderErrorPage(req, res, new APIError(APIErrorCode.none, 'Page not Found', 404));
+        this.renderErrorPage(req, res, new ExpectedError(ErrorCode.none, 'Page not Found', 404));
     }
     
     private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error, hasView: boolean): void {
         if (hasView) {
-            let apiError: APIError;
+            let expectedError: ExpectedError;
             
-            if (error instanceof APIError) {
-                apiError = error;
+            if (error instanceof ExpectedError) {
+                expectedError = error;
             } else {
-                apiError = new APIError(APIErrorCode.unknown, undefined, 500);
+                expectedError = new ExpectedError(ErrorCode.unknown, undefined, 500);
             }
             
-            this.renderErrorPage(req, res, apiError);
+            this.renderErrorPage(req, res, expectedError);
         } else {
             new JSONErrorResponse(error).applyTo(res);
         }
     }
     
-    private renderErrorPage(req: ExpressRequest, res: ExpressResponse, apiError: APIError): void {
-        let { status, message } = apiError;
+    private renderErrorPage(req: ExpressRequest, res: ExpressResponse, expectedError: ExpectedError): void {
+        let { status, message } = expectedError;
         
         res.status(status);
         
