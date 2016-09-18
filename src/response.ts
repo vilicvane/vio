@@ -14,14 +14,14 @@ export class Response {
         public content: string | Buffer | Readable,
         public status = 200
     ) { }
-    
+
     applyTo(res: ExpressResponse): void {
         res
             .status(this.status)
             .type(this.type);
-        
+
         let content = this.content;
-        
+
         if (content instanceof Readable) {
             content.pipe(res);
         } else {
@@ -37,7 +37,7 @@ export class Redirection extends Response {
     ) {
         super(undefined, undefined, status);
     }
-    
+
     applyTo(res: ExpressResponse): void {
         res.redirect(this.status, this.url);
     }
@@ -61,24 +61,24 @@ export class JSONErrorResponse extends Response {
     constructor(error: any, status?: number) {
         let code: number;
         let message: string;
-        
+
         if (error instanceof ExpectedError) {
             status = status || error.status;
             code = error.code;
             message = error.message;
         }
-        
+
         status = status || 500;
         code = code || ErrorCode.unknown;
         message = message || ErrorMessages[code] || ErrorMessages[ErrorCode.unknown];
-        
+
         let json = JSON.stringify({
             error: {
                 code,
                 message
             }
         });
-        
+
         super('application/json', json, status);
     }
 }

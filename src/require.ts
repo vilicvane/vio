@@ -20,13 +20,13 @@ function lock(path: string): boolean {
             return false;
         }
     }
-    
+
     locks = new Set<string>([path]);
-    
+
     setImmediate(() => {
         locks = undefined;
     });
-    
+
     return false;
 }
 
@@ -41,40 +41,40 @@ Module._extensions['.js'] = (module, filename) => {
     if (!lastModifiedTimestamps.has(filename)) {
         return originalJSResolver(module, filename);
     }
-    
+
     let content = FS.readFileSync(filename, 'utf-8');
-    
+
     content = stripBOM(content);
     content = `require = require(${JSON.stringify(__filename)})(require, module);${content}`;
-    
+
     module._compile(content, filename);
 };
 
 export = (originalRequire: NodeRequire) => {
     let vioRequire = function require(path: string): any {
         let resolvedPath = originalRequire.resolve(path);
-        
+
         if (
             Path.isAbsolute(resolvedPath) &&
             !/[\\/]node_modules[\\/]/.test(resolvedPath) &&
             !lock(resolvedPath)
         ) {
             let previousLastModified = lastModifiedTimestamps.get(resolvedPath);
-            
+
             if (previousLastModified || !Module._cache[resolvedPath]) {
                 let lastModified = FS.statSync(resolvedPath).mtime.getTime();
-                
+
                 if (lastModified !== previousLastModified) {
                     delete Module._cache[resolvedPath];
                     lastModifiedTimestamps.set(resolvedPath, lastModified);
-                }    
+                }
             }
         }
-        
+
         return originalRequire(path);
     };
-    
+
     Object.assign(vioRequire, originalRequire);
-    
+
     return vioRequire;
 };

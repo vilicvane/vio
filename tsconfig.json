@@ -1,11 +1,13 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "module": "commonjs",
-        "noLib": true,
         "experimentalDecorators": true,
         "noEmitOnError": true,
         "noImplicitAny": true,
+        // "noImplicitReturns": true,
+        // "noImplicitThis": true,
+        // "noImplicitUseStrict": true,
         "declaration": true,
         "sourceMap": true,
         "sourceRoot": "src",

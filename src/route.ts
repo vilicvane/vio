@@ -4,8 +4,6 @@ import { Promise, Resolvable } from 'thenfail';
 
 import { Router } from './router';
 
-let hop: HOP = Object.prototype.hasOwnProperty;
-
 export interface RouterOptions {
     prefix: string;
 }
@@ -15,7 +13,7 @@ export interface RouterOptions {
 export type HttpMethod = string;
 
 export interface ControllerOptions {
-    
+
 }
 
 export abstract class Controller {
@@ -35,7 +33,7 @@ export interface MethodOptions<TPermission> {
 export interface RouteOptions<TPermission> extends MethodOptions<TPermission> {
     /**
      * Path that will be appended to parent.
-     * 
+     *
      * Accepts:
      * 1. abc-xyz
      * 2. abc-xyz/:paramA/:paramB
@@ -69,9 +67,9 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
         if (!controllerPrototype.routes) {
             controllerPrototype.routes = [];
         }
-        
+
         let handler = descriptor.value;
-        
+
         let {
             path,
             view,
@@ -79,17 +77,17 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
             permission,
             permissions
         } = options;
-        
+
         if (!path && name !== 'default') {
             path = hyphenate(name, {
                 lowerCase: true
             });
         }
-        
+
         let permissionDescriptor = permission ?
             permission : permissions ?
             new CompoundOrPermissionDescriptor(permissions) : undefined;
-        
+
         controllerPrototype.routes.push({
             method: method.toLowerCase(),
             path,
@@ -127,11 +125,11 @@ export function post<TPermission>(options?: RouteOptions<TPermission>) {
 
 export abstract class PermissionDescriptor<T> {
     abstract validate(userPermission: T): boolean;
-    
+
     static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
         return new CompoundOrPermissionDescriptor<T>(permissions);
     }
-    
+
     static and<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
         return new CompoundAndPermissionDescriptor<T>(permissions);
     }
@@ -143,14 +141,14 @@ export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
     ) {
         super();
     }
-    
+
     validate(permission: T): boolean {
         for (let descriptor of this.descriptors) {
             if (descriptor.validate(permission)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }
@@ -161,14 +159,14 @@ export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> 
     ) {
         super();
     }
-    
+
     validate(permission: T): boolean {
         for (let descriptor of this.descriptors) {
             if (!descriptor.validate(permission)) {
                 return false;
             }
         }
-        
+
         return true;
     }
 }

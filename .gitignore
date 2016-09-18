@@ -1,6 +1,7 @@
-/.vscode/settings.json
+/.vscode/
 /bld/
 /coverage/
 
 node_modules/
+
 npm-debug.log
