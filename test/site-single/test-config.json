@@ -1,267 +1,267 @@
 {
-    "viewsExtension": ".hbs",
-    "userProvider": true,
-    "tests": [
-        {
-            "method": "get",
-            "path": "/",
-            "description": "should get 200 with view",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "text/html",
-                    "content": "default"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/",
-            "description": "should get 200 with view again",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "text/html",
-                    "content": "default"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/list",
-            "description": "should get 200 as json",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "data": "list"
-                    }
-                }
-            }
-        },
-        {
-            "method": "post",
-            "path": "/u/vilicvane",
-            "description": "should get 200 with param as json",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "data": "vilicvane"
-                    }
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/u/vilicvane",
-            "description": "should get 404 for unmatched http method",
-            "expected": {
-                "all": {
-                    "status": 404
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/user/home",
-            "description": "should get 200 with view",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "text/html",
-                    "content": "user-home"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/user/resource",
-            "description": "should get 200",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "data": "get"
-                    }
-                }
-            }
-        },
-        {
-            "method": "post",
-            "path": "/user/resource",
-            "description": "should post 200",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "data": "post"
-                    }
-                }
-            }
-        },
-        {
-            "method": "put",
-            "path": "/user/resource",
-            "description": "should put 404",
-            "expected": {
-                "all": {
-                    "status": 404,
-                    "contentType": "text/html"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/hello/world",
-            "description": "should get 200",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "data": "abc"
-                    }
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/oops",
-            "description": "should get 500 with default view",
-            "expected": {
-                "all": {
-                    "status": 500,
-                    "contentType": "text/html",
-                    "content": "html 500"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/ouch",
-            "description": "should get 500 with default view",
-            "expected": {
-                "all": {
-                    "status": 500,
-                    "contentType": "text/html",
-                    "content": "Unknown error"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/module-cache",
-            "description": "should get true",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "data": true
-                    }
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/permission-denied",
-            "description": "should get 403",
-            "expected": {
-                "all": {
-                    "status": 403,
-                    "contentType": "application/json"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/permission-granted",
-            "description": "should get 200",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/permission-denied-and",
-            "description": "should get 403",
-            "expected": {
-                "all": {
-                    "status": 403,
-                    "contentType": "application/json"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/permission-granted-and",
-            "description": "should get 200",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/redirect",
-            "description": "should get 200 with view",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "text/html",
-                    "content": "default"
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/json-redirect",
-            "description": "should get 200 with json location",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "location": "/"
-                    }
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/json-response",
-            "description": "should get 200 with custom json",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "application/json",
-                    "content": {
-                        "foo": "bar"
-                    }
-                }
-            }
-        },
-        {
-            "method": "get",
-            "path": "/stream-response",
-            "description": "should get 200",
-            "expected": {
-                "all": {
-                    "status": 200,
-                    "contentType": "text/html",
-                    "content": "stream"
-                }
-            }
+  "viewsExtension": ".hbs",
+  "userProvider": true,
+  "tests": [
+    {
+      "method": "get",
+      "path": "/",
+      "description": "should get 200 with view",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "text/html",
+          "content": "default"
         }
-    ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/",
+      "description": "should get 200 with view again",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "text/html",
+          "content": "default"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/list",
+      "description": "should get 200 as json",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "data": "list"
+          }
+        }
+      }
+    },
+    {
+      "method": "post",
+      "path": "/u/vilicvane",
+      "description": "should get 200 with param as json",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "data": "vilicvane"
+          }
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/u/vilicvane",
+      "description": "should get 404 for unmatched http method",
+      "expected": {
+        "all": {
+          "status": 404
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/user/home",
+      "description": "should get 200 with view",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "text/html",
+          "content": "user-home"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/user/resource",
+      "description": "should get 200",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "data": "get"
+          }
+        }
+      }
+    },
+    {
+      "method": "post",
+      "path": "/user/resource",
+      "description": "should post 200",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "data": "post"
+          }
+        }
+      }
+    },
+    {
+      "method": "put",
+      "path": "/user/resource",
+      "description": "should put 404",
+      "expected": {
+        "all": {
+          "status": 404,
+          "contentType": "text/html"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/hello/world",
+      "description": "should get 200",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "data": "abc"
+          }
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/oops",
+      "description": "should get 500 with default view",
+      "expected": {
+        "all": {
+          "status": 500,
+          "contentType": "text/html",
+          "content": "html 500"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/ouch",
+      "description": "should get 500 with default view",
+      "expected": {
+        "all": {
+          "status": 500,
+          "contentType": "text/html",
+          "content": "Unknown error"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/module-cache",
+      "description": "should get true",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "data": true
+          }
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/permission-denied",
+      "description": "should get 403",
+      "expected": {
+        "all": {
+          "status": 403,
+          "contentType": "application/json"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/permission-granted",
+      "description": "should get 200",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/permission-denied-and",
+      "description": "should get 403",
+      "expected": {
+        "all": {
+          "status": 403,
+          "contentType": "application/json"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/permission-granted-and",
+      "description": "should get 200",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/redirect",
+      "description": "should get 200 with view",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "text/html",
+          "content": "default"
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/json-redirect",
+      "description": "should get 200 with json location",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "location": "/"
+          }
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/json-response",
+      "description": "should get 200 with custom json",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "application/json",
+          "content": {
+            "foo": "bar"
+          }
+        }
+      }
+    },
+    {
+      "method": "get",
+      "path": "/stream-response",
+      "description": "should get 200",
+      "expected": {
+        "all": {
+          "status": 200,
+          "contentType": "text/html",
+          "content": "stream"
+        }
+      }
+    }
+  ]
 }

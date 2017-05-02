@@ -1,20 +1,21 @@
 {
-    "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "experimentalDecorators": true,
-        "noEmitOnError": true,
-        "noImplicitAny": true,
-        // "noImplicitReturns": true,
-        // "noImplicitThis": true,
-        // "noImplicitUseStrict": true,
-        "declaration": true,
-        "sourceMap": true,
-        "sourceRoot": "src",
-        "outDir": "bld"
-    },
-    "exclude": [
-        "bld",
-        "node_modules"
-    ]
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    // "noImplicitReturns": true,
+    // "noImplicitThis": true,
+    // "noImplicitUseStrict": true,
+    "declaration": true,
+    "sourceMap": true,
+    "newLine": "LF",
+    "rootDir": "src",
+    "outDir": "bld"
+  },
+  "exclude": [
+    "bld",
+    "node_modules"
+  ]
 }

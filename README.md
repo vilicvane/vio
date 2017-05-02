@@ -1,5 +1,5 @@
 [![NPM Package](https://badge.fury.io/js/vio.svg)](https://www.npmjs.com/package/vio)
-[![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio) 
+[![Build Status](https://travis-ci.org/vilic/vio.svg)](https://travis-ci.org/vilic/vio)
 [![Coverage Status](https://coveralls.io/repos/vilic/vio/badge.svg?branch=master&service=github)](https://coveralls.io/github/vilic/vio?branch=master)
 
 # VIO
@@ -26,7 +26,7 @@ project
 │   ├───api
 │   │   └───routes
 │   ├───page
-│   │   ├───routes 
+│   │   ├───routes
 │   │   └───views   # contains .hbs files with the same structure as in src.
 │   ├───server
 │   │       www.js  # entry file.
@@ -50,12 +50,12 @@ project
         │   │   default.less
         │   └───images
         └───user
-            │   sign-in.hbs
-            │   sign-up.hbs
-            ├───account
-            │       account.hbs  # faster editor navigation with filename.
-            └───default
-                    user.hbs
+        │   sign-in.hbs
+        │   sign-up.hbs
+        ├───account
+        │       account.hbs  # faster editor navigation with filename.
+        └───default
+            user.hbs
 ```
 
 You may configure tasks using [gulp](http://gulpjs.com/) or other tools.
@@ -91,7 +91,7 @@ Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it 
 
 ## Usage
 
-The following example is in TypeScript. If you are using Babel, the `import` statements will slightly differ. 
+The following example is in TypeScript. If you are using Babel, the `import` statements will slightly differ.
 
 **src/server.ts**
 
@@ -107,9 +107,9 @@ let app = express();
 app.engine('hbs', handlebars);
 
 let router = new Router(app, {
-    routesRoot: Path.join(__dirname, 'routes'),
-    viewsRoot: Path.join(__dirname, '../views'),
-    viewsExtension: '.hbs'
+  routesRoot: Path.join(__dirname, 'routes'),
+  viewsRoot: Path.join(__dirname, '../views'),
+  viewsExtension: '.hbs'
 });
 
 app.listen(1337);
@@ -122,15 +122,15 @@ import { Controller, get } from 'vio';
 
 // extends `Controller` class.
 export default class extends Controller {
-    // route as a HTTP GET request.
-    @get()
-    default() {
-        // can also be a promise if it's async.
-        return {
-            title: 'Hello, VIO!',
-            content: 'Keep calm and read the doc!'
-        };
-    }
+  // route as a HTTP GET request.
+  @get()
+  default() {
+    // can also be a promise if it's async.
+    return {
+      title: 'Hello, VIO!',
+      content: 'Keep calm and read the doc!'
+    };
+  }
 }
 ```
 
@@ -140,12 +140,12 @@ export default class extends Controller {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>{{title}}</title>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
 </head>
 <body>
-    <h1>{{title}}</h1>
-    <p>{{content}}</p>
+  <h1>{{title}}</h1>
+  <p>{{content}}</p>
 </body>
 </html>
 ```

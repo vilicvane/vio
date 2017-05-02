@@ -5,7 +5,7 @@ import { Promise, Resolvable } from 'thenfail';
 import { Router } from './router';
 
 export interface RouterOptions {
-    prefix: string;
+  prefix: string;
 }
 
 // TODO: use string literal type.
@@ -17,43 +17,43 @@ export interface ControllerOptions {
 }
 
 export abstract class Controller {
-    routes: Route[];
+  routes: Route[];
 }
 
 export interface MethodOptions<TPermission> {
-    /** Specify view path. */
-    view?: string;
-    /** Require authentication. */
-    authentication?: boolean;
-    /** Permission descriptor. */
-    permission?: PermissionDescriptor<TPermission>;
-    permissions?: PermissionDescriptor<TPermission>[];
+  /** Specify view path. */
+  view?: string;
+  /** Require authentication. */
+  authentication?: boolean;
+  /** Permission descriptor. */
+  permission?: PermissionDescriptor<TPermission>;
+  permissions?: PermissionDescriptor<TPermission>[];
 }
 
 export interface RouteOptions<TPermission> extends MethodOptions<TPermission> {
-    /**
-     * Path that will be appended to parent.
-     *
-     * Accepts:
-     * 1. abc-xyz
-     * 2. abc-xyz/:paramA/:paramB
-     * 3. :paramA/:paramB
-     */
-    path?: string;
+  /**
+   * Path that will be appended to parent.
+   *
+   * Accepts:
+   * 1. abc-xyz
+   * 2. abc-xyz/:paramA/:paramB
+   * 3. :paramA/:paramB
+   */
+  path?: string;
 }
 
 export interface Route {
-    method: string;
-    path: string;
-    view: string;
-    resolvedView?: string;
-    handler: RouteHandler;
-    authentication: boolean;
-    permissionDescriptor?: PermissionDescriptor<any>;
+  method: string;
+  path: string;
+  view: string;
+  resolvedView?: string;
+  handler: RouteHandler;
+  authentication: boolean;
+  permissionDescriptor?: PermissionDescriptor<any>;
 }
 
 export interface Request<TUser extends RequestUser<any>> extends express.Request {
-    user: TUser;
+  user: TUser;
 }
 
 export type ExpressRequest = express.Request;
@@ -63,57 +63,57 @@ export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse
 
 /** @decorator */
 export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPermission> = {}) {
-    return (controllerPrototype: Controller, name: string, descriptor: PropertyDescriptor) => {
-        if (!controllerPrototype.routes) {
-            controllerPrototype.routes = [];
-        }
+  return (controllerPrototype: Controller, name: string, descriptor: PropertyDescriptor) => {
+    if (!controllerPrototype.routes) {
+      controllerPrototype.routes = [];
+    }
 
-        let handler = descriptor.value;
+    let handler = descriptor.value;
 
-        let {
-            path,
-            view,
-            authentication = false,
-            permission,
-            permissions
-        } = options;
+    let {
+      path,
+      view,
+      authentication = false,
+      permission,
+      permissions
+    } = options;
 
-        if (!path && name !== 'default') {
-            path = hyphenate(name, {
-                lowerCase: true
-            });
-        }
+    if (!path && name !== 'default') {
+      path = hyphenate(name, {
+        lowerCase: true
+      });
+    }
 
-        let permissionDescriptor = permission ?
-            permission : permissions ?
-            new CompoundOrPermissionDescriptor(permissions) : undefined;
+    let permissionDescriptor = permission ?
+      permission : permissions ?
+      new CompoundOrPermissionDescriptor(permissions) : undefined;
 
-        controllerPrototype.routes.push({
-            method: method.toLowerCase(),
-            path,
-            view,
-            handler,
-            authentication,
-            permissionDescriptor
-        });
-    };
+    controllerPrototype.routes.push({
+      method: method.toLowerCase(),
+      path,
+      view,
+      handler,
+      authentication,
+      permissionDescriptor
+    });
+  };
 }
 
 /** @decorator */
 export function method<TPermission>(options?: MethodOptions<TPermission>) {
-    return (controller: Controller, name: HttpMethod, descriptor: PropertyDescriptor) => {
-        return route(name, options)(controller, 'default', descriptor);
-    };
+  return (controller: Controller, name: HttpMethod, descriptor: PropertyDescriptor) => {
+    return route(name, options)(controller, 'default', descriptor);
+  };
 }
 
 /** @decorator */
 export function get<TPermission>(options?: RouteOptions<TPermission>) {
-    return route('get', options);
+  return route('get', options);
 }
 
 /** @decorator */
 export function post<TPermission>(options?: RouteOptions<TPermission>) {
-    return route('post', options);
+  return route('post', options);
 }
 
 // /** @decorator */
@@ -124,58 +124,58 @@ export function post<TPermission>(options?: RouteOptions<TPermission>) {
 // }
 
 export abstract class PermissionDescriptor<T> {
-    abstract validate(userPermission: T): boolean;
+  abstract validate(userPermission: T): boolean;
 
-    static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
-        return new CompoundOrPermissionDescriptor<T>(permissions);
-    }
+  static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
+    return new CompoundOrPermissionDescriptor<T>(permissions);
+  }
 
-    static and<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
-        return new CompoundAndPermissionDescriptor<T>(permissions);
-    }
+  static and<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
+    return new CompoundAndPermissionDescriptor<T>(permissions);
+  }
 }
 
 export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
-    constructor(
-        public descriptors: PermissionDescriptor<T>[]
-    ) {
-        super();
+  constructor(
+    public descriptors: PermissionDescriptor<T>[]
+  ) {
+    super();
+  }
+
+  validate(permission: T): boolean {
+    for (let descriptor of this.descriptors) {
+      if (descriptor.validate(permission)) {
+        return true;
+      }
     }
 
-    validate(permission: T): boolean {
-        for (let descriptor of this.descriptors) {
-            if (descriptor.validate(permission)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    return false;
+  }
 }
 
 export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> {
-    constructor(
-        public descriptors: PermissionDescriptor<T>[]
-    ) {
-        super();
+  constructor(
+    public descriptors: PermissionDescriptor<T>[]
+  ) {
+    super();
+  }
+
+  validate(permission: T): boolean {
+    for (let descriptor of this.descriptors) {
+      if (!descriptor.validate(permission)) {
+        return false;
+      }
     }
 
-    validate(permission: T): boolean {
-        for (let descriptor of this.descriptors) {
-            if (!descriptor.validate(permission)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    return true;
+  }
 }
 
 export interface RequestUser<TPermission> {
-    permission: TPermission;
+  permission: TPermission;
 }
 
 export interface UserProvider<T extends RequestUser<any>> {
-    get(req: ExpressRequest): Resolvable<T>;
-    authenticate(req: ExpressRequest): Resolvable<T>;
+  get(req: ExpressRequest): Resolvable<T>;
+  authenticate(req: ExpressRequest): Resolvable<T>;
 }
