@@ -8,10 +8,8 @@ export interface RequestResult {
 }
 
 export function request(method: string, url: string): Promise<RequestResult> {
-  return new Promise((resolve, reject) => {
-    sendRequest(url, {
-      method
-    }, (error, res, content) => {
+  return new Promise<RequestResult>((resolve, reject) => {
+    sendRequest(url, { method }, (error, res, content) => {
       if (error) {
         reject(error);
         return;
@@ -20,7 +18,7 @@ export function request(method: string, url: string): Promise<RequestResult> {
       resolve({
         status: res.statusCode,
         contentType: res.headers['content-type'],
-        content
+        content,
       });
     });
   });

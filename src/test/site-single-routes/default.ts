@@ -3,21 +3,21 @@ import * as Path from 'path';
 
 import {
   Controller,
-  Request,
   ExpectedError,
-  PermissionDescriptor as PD,
-  Redirection,
   JSONRedirection,
   JSONResponse,
+  PermissionDescriptor as PD,
+  Redirection,
+  Request,
   Response,
   get,
   post,
-  route
+  route,
 } from '../../';
 
 import { TestPermissionDescriptor, TestRoles } from '../modules/user-provider';
 
-// test vio require
+// Test vio require
 import * as Test1 from '../modules/test';
 import * as Test2 from '../modules/test';
 
@@ -27,7 +27,7 @@ export default class DefaultController extends Controller {
   @get()
   default() {
     return {
-      content: 'default'
+      content: 'default',
     };
   }
 
@@ -37,10 +37,10 @@ export default class DefaultController extends Controller {
   }
 
   @post({
-    path: 'u/:user'
+    path: 'u/:user',
   })
   user(req: Request<any>) {
-    return req.params['user'];
+    return req.params.user;
   }
 
   @get()
@@ -59,23 +59,23 @@ export default class DefaultController extends Controller {
   }
 
   @get({
-    permission: TestPermissionDescriptor.admin
+    permission: TestPermissionDescriptor.admin,
   })
   permissionDenied() { }
 
   @get({
-    permissions: [TestPermissionDescriptor.admin, TestPermissionDescriptor.user]
+    permissions: [TestPermissionDescriptor.admin, TestPermissionDescriptor.user],
   })
   permissionGranted() { }
 
   @get({
-    permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user)
+    permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user),
   })
   permissionDeniedAnd() { }
 
   @get({
     authentication: true,
-    permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user)
+    permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user),
   })
   permissionGrantedAnd() { }
 
@@ -92,7 +92,7 @@ export default class DefaultController extends Controller {
   @get()
   jsonResponse() {
     return new JSONResponse({
-      foo: 'bar'
+      foo: 'bar',
     });
   }
 

@@ -3,16 +3,16 @@ import { Readable } from 'stream';
 import { Response as ExpressResponse } from 'express';
 
 import {
-  ExpectedError,
   ErrorCode,
-  ErrorMessages
+  ErrorMessages,
+  ExpectedError,
 } from './';
 
 export class Response {
   constructor(
     public type: string,
     public content: string | Buffer | Readable,
-    public status = 200
+    public status = 200,
   ) { }
 
   applyTo(res: ExpressResponse): void {
@@ -33,7 +33,7 @@ export class Response {
 export class Redirection extends Response {
   constructor(
     public url: string,
-    status = 302
+    status = 302,
   ) {
     super(undefined, undefined, status);
   }
@@ -75,8 +75,8 @@ export class JSONErrorResponse extends Response {
     let json = JSON.stringify({
       error: {
         code,
-        message
-      }
+        message,
+      },
     });
 
     super('application/json', json, status);

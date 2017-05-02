@@ -6,10 +6,16 @@
   "typings": "bld/index.d.ts",
   "scripts": {
     "tsc": "tsc",
-    "coveralls": "cat coverage/lcov.info | coveralls",
-    "build": "tsc",
-    "test": "istanbul cover node_modules/mocha/bin/_mocha",
-    "posttest": "istanbul check-coverage --statements 80 --functions 80 --branches 60 --lines 80"
+    "baseman": "baseman",
+    "nyc": "nyc",
+    "coveralls": "coveralls",
+    "tslint": "tslint",
+    "lint": "tslint -c tslint.json -p tsconfig.json --type-check",
+    "build": "npm run lint && rimraf bld && tsc",
+    "bare-test": "mocha",
+    "pretest": "npm run build",
+    "test": "nyc npm run bare-test",
+    "report-coverage": "cat coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -51,11 +57,13 @@
     "consolidate": "^0.13.1",
     "coveralls": "^2.13.1",
     "handlebars": "^4.0.7",
-    "istanbul": "^1.1.0-alpha.1",
     "lodash": "^3.10.1",
     "mocha": "^2.5.3",
+    "nyc": "^10.3.0",
     "request": "^2.81.0",
     "source-map-support": "^0.3.3",
-    "typescript": "^2.3.2"
+    "tslint": "^5.1.0",
+    "typescript": "^2.3.2",
+    "vts": "^5.1.1"
   }
 }

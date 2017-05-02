@@ -1,40 +1,40 @@
+/* tslint:disable:member-ordering */
 import * as FS from 'fs';
 import * as Path from 'path';
 
-import * as glob from 'glob';
 import * as Chalk from 'chalk';
+import * as glob from 'glob';
 
 const vioRequire: NodeRequire = require('./require')(require);
 
 import {
   Express,
-  Router as ExpressRouter,
   IRouterMatcher as ExpressRouterMatcher,
   Request as ExpressRequest,
+  RequestHandler as ExpressRequestHandler,
   Response as ExpressResponse,
-  RequestHandler as ExpressRequestHandler
+  Router as ExpressRouter,
 } from 'express';
 
 import { Promise } from 'thenfail';
 
 import {
+  Controller,
+  ErrorCode,
+  ErrorMessages,
+  ErrorTransformer,
+  ExpectedError,
   HttpMethod,
+  JSONDataResponse,
+  JSONErrorResponse,
+  PermissionDescriptor,
+  Request,
+  RequestUser,
+  Response,
   Route,
   RouteHandler,
   RouteOptions,
-  Controller,
-  ControllerOptions,
-  PermissionDescriptor,
   UserProvider,
-  RequestUser,
-  Request,
-  Response,
-  JSONDataResponse,
-  JSONErrorResponse,
-  ExpectedError,
-  ErrorCode,
-  ErrorMessages,
-  ErrorTransformer
 } from './';
 
 /**
@@ -49,18 +49,21 @@ interface RouteGuess {
 }
 
 // WARNING
-// we are using private Express properties for development purpose.
+// We are using private Express properties for development purpose.
 
 //#region Express private properties
 
+// tslint:disable-next-line:class-name
 export interface _ExpressLayer {
   handle: ExpressRouter;
 }
 
+// tslint:disable-next-line:class-name
 export interface _ExpressRootRouter {
   stack: _ExpressLayer[];
 }
 
+// tslint:disable-next-line:class-name
 export interface _Express extends Express {
   _router: _ExpressRootRouter;
 }
@@ -112,7 +115,7 @@ export class Router {
       errorViewsFolder = 'error',
       defaultSubsite,
       prefix,
-      production = PRODUCTION
+      production = PRODUCTION,
     }: {
       routesRoot?: string;
       viewsRoot?: string;
@@ -121,7 +124,7 @@ export class Router {
       defaultSubsite?: string;
       prefix?: string;
       production?: boolean;
-    } = {}
+    } = {},
   ) {
     this.app = app as _Express;
 
@@ -131,7 +134,7 @@ export class Router {
 
     if (viewsExtension) {
       if (viewsExtension[0] !== '.') {
-        viewsExtension = '.' + viewsExtension;
+        viewsExtension = `.${viewsExtension}`;
       }
 
       this.viewsExtension = viewsExtension;
@@ -139,11 +142,11 @@ export class Router {
 
     this.defaultSubsite = defaultSubsite;
 
-    // ensure prefix starts but not ends with '/', i.e. '/prefix'.
+    // Ensure prefix starts but not ends with '/', i.e. '/prefix'.
     if (prefix) {
       if (prefix !== '/') {
         if (prefix[0] !== '/') {
-          prefix = '/' + prefix;
+          prefix = `/${prefix}`;
         }
 
         if (prefix[prefix.length - 1] === '/') {
@@ -162,8 +165,6 @@ export class Router {
     if (production) {
       this.attachRoutes();
     } else {
-      // this.app.set('view cache', false);
-
       app.use(prefix, (req, res, next) => {
         this.attachRoutesDynamically(req.path);
         next();
@@ -172,7 +173,7 @@ export class Router {
 
     app.use(prefix, this.router);
 
-    // handle 404.
+    // Handle 404.
     app.use(prefix, (req, res) => this.handleNotFound(req, res));
   }
 
@@ -188,7 +189,7 @@ export class Router {
     console.log('loading routes...');
 
     let routeFilePaths = glob.sync('**/*.js', {
-      cwd: this.routesRoot
+      cwd: this.routesRoot,
     });
 
     for (let routeFilePath of routeFilePaths) {
@@ -242,9 +243,9 @@ export class Router {
 
     let expressRouterStack = this.app._router.stack;
 
-    for (let i = 0; i < expressRouterStack.length; i++) {
-      if (expressRouterStack[i].handle === previousRouter) {
-        expressRouterStack[i].handle = router;
+    for (let routerInStack of expressRouterStack) {
+      if (routerInStack.handle === previousRouter) {
+        routerInStack.handle = router;
         break;
       }
     }
@@ -282,8 +283,8 @@ export class Router {
       {
         routePath: '',
         lastPart: '',
-        routeFilePaths: ['default.js']
-      }
+        routeFilePaths: ['default.js'],
+      },
     ];
 
     let lastPossibleRoutePath = '';
@@ -291,22 +292,22 @@ export class Router {
     for (let i = 0; i < pathParts.length; i++) {
       let pathPart = pathParts[i];
 
-      lastPossibleRoutePath += '/' + pathPart;
+      lastPossibleRoutePath += `/${pathPart}`;
 
-      // if it has default subsite configured, do not search the containing folder.
+      // If it has default subsite configured, do not search the containing folder.
       let routeFilePaths = i === 0 && this.defaultSubsite ? [
         `${lastPossibleRoutePath}/default.js`,
-        `${lastPossibleRoutePath}/${pathPart}.js`
+        `${lastPossibleRoutePath}/${pathPart}.js`,
       ] : [
         `${lastPossibleRoutePath}.js`,
         `${lastPossibleRoutePath}/default.js`,
-        `${lastPossibleRoutePath}/${pathPart}.js`
+        `${lastPossibleRoutePath}/${pathPart}.js`,
       ];
 
       routeGuesses.push({
         routePath: lastPossibleRoutePath,
         lastPart: pathPart,
-        routeFilePaths
+        routeFilePaths,
       });
     }
 
@@ -326,7 +327,7 @@ export class Router {
     let ControllerClass: typeof Controller;
 
     try {
-      // we use the `exports.default` as the target controller class.
+      // We use the `exports.default` as the target controller class.
       ControllerClass = Router.getControllerClass(vioRequire(resolvedRouteFilePath));
     } catch (error) {
       console.warn(`Failed to load route module "${resolvedRouteFilePath}".
@@ -344,8 +345,8 @@ ${error.stack}`);
    * ["abc", "def", "ghi"]
    */
   private static splitRequestPath(path: string): string[] {
-    // the empty string matching pattern (after `|`) is to prevent matching from skipping undesired substring.
-    // for example, the query string part.
+    // The empty string matching pattern (after `|`) is to prevent matching from skipping undesired substring.
+    // For example, the query string part.
     return Router.splitPath(path, /\/?([^/?]+)|/g);
   }
 
@@ -374,7 +375,7 @@ ${error.stack}`);
     let routes: Route[];
 
     if (typeof ControllerClass === 'function') {
-      controller = new (<any>ControllerClass)();
+      controller = new (ControllerClass as any)();
       routes = controller.routes;
     }
 
@@ -399,7 +400,8 @@ ${error.stack}`);
     let possibleRoutePaths = this.getPossibleRoutePaths(routeFilePath, route.path);
 
     for (let possibleRoutePath of possibleRoutePaths) {
-      console.log(`${Chalk.green('*')} ${possibleRoutePath} ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
+      console.log(`${Chalk.green('*')} ${possibleRoutePath} \
+${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
       ((router as any)[methodName] as ExpressRouterMatcher<any>)(possibleRoutePath, routeHandler);
     }
   }
@@ -414,7 +416,7 @@ ${error.stack}`);
     let pathParts = Router.splitRouteFilePath(routeFilePath);
 
     let firstPart = pathParts.shift();
-    // could be undefined if only one part (filename).
+    // Could be undefined if only one part (filename).
     let lastPart = pathParts.pop();
 
     let possiblePathPartsGroups: string[][] = [];
@@ -445,7 +447,7 @@ ${error.stack}`);
         }
       }
 
-      return '/' + parts.join('/');
+      return `/${parts.join('/')}`;
     });
   }
 
@@ -485,8 +487,8 @@ ${error.stack}`);
     }
 
     possibleViewPaths.push(...[
-      Path.join(viewSearchPath, 'default' + this.viewsExtension),
-      Path.join(viewSearchPath, 'default', 'default' + this.viewsExtension)
+      Path.join(viewSearchPath, `default${this.viewsExtension}`),
+      Path.join(viewSearchPath, 'default', `default${this.viewsExtension}`),
     ]);
 
     if (pathParts.length) {
@@ -494,7 +496,7 @@ ${error.stack}`);
 
       possibleViewPaths.push(...[
         Path.join(viewSearchPath, lastPart + this.viewsExtension),
-        Path.join(viewSearchPath, 'default', lastPart + this.viewsExtension)
+        Path.join(viewSearchPath, 'default', lastPart + this.viewsExtension),
       ]);
     }
 
@@ -527,14 +529,14 @@ ${error.stack}`);
         (req as Request<RequestUser<any>>).user = user;
       })
       .then(() => route.handler(req as Request<RequestUser<any>>, res))
-      .then((result: Object | Response) => {
+      .then((result: object) => {
         if (res.headersSent) {
           if (result) {
             console.warn(`Header has already been sent, but the route handler returns a non-null value.
 ${route.handler.toString()}`);
           }
 
-          return;
+          return undefined;
         }
 
         // Handle specified response.
@@ -602,7 +604,7 @@ ${route.handler.toString()}`);
       res.render(viewPath, {
         url: req.url,
         message,
-        status
+        status,
       });
     } else {
       // TODO: some beautiful default error pages.
@@ -620,8 +622,8 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
 
     let possibleFileNames = [
       statusStr + this.viewsExtension,
-      statusStr.substr(0, 2) + 'x' + this.viewsExtension,
-      statusStr.substr(0, 1) + 'xx' + this.viewsExtension
+      `${statusStr.substr(0, 2)}x${this.viewsExtension}`,
+      `${statusStr.substr(0, 1)}xx${this.viewsExtension}`,
     ];
 
     for (let fileName of possibleFileNames) {
@@ -629,9 +631,9 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
 
       let possiblePaths = subsiteName ? [
         Path.resolve(this.viewsRoot, subsiteName, viewPath),
-        Path.resolve(this.viewsRoot, viewPath)
+        Path.resolve(this.viewsRoot, viewPath),
       ] : [
-        Path.resolve(this.viewsRoot, viewPath)
+        Path.resolve(this.viewsRoot, viewPath),
       ];
 
       for (let path of possiblePaths) {
@@ -650,7 +652,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
     if (part) {
       let subsiteDir = Path.join(this.routesRoot, part);
 
-      // cache in production mode
+      // Cache in production mode
       if (this.fsExistsSync(subsiteDir)) {
         return part.substr(1);
       }
@@ -689,6 +691,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
     let part: string;
     let parts: string[] = [];
 
+    // tslint:disable-next-line:no-conditional-assignment
     while (part = regex.exec(path)[1]) {
       parts.push(part);
     }

@@ -8,14 +8,14 @@ describe('router', () => {
     defaultSubsite: string;
     viewsRoot: string;
     viewsExtension: string;
-    getPossibleRoutePaths: (routeFilePath: string, routePath: string) => string;
-    getPossibleViewPaths: (routeFilePath: string, routePath: string) => string;
+    getPossibleRoutePaths(routeFilePath: string, routePath: string): string;
+    getPossibleViewPaths(routeFilePath: string, routePath: string): string;
   } = {
     defaultSubsite: undefined,
     viewsRoot: 'views-root',
     viewsExtension: '.hbs',
     getPossibleRoutePaths: (Router.prototype as any).getPossibleRoutePaths,
-    getPossibleViewPaths: (Router.prototype as any).getPossibleViewPaths
+    getPossibleViewPaths: (Router.prototype as any).getPossibleViewPaths,
   };
 
   context('#getPossibleRoutePaths', () => {
@@ -26,63 +26,63 @@ describe('router', () => {
         [
           'abc/def.js',
           undefined,
-          ['/abc/def']
+          ['/abc/def'],
         ],
         [
           'abc/abc.js',
           undefined,
-          ['/abc']
+          ['/abc'],
         ],
         [
           'abc/abc/abc.js',
           undefined,
-          ['/abc/abc']
+          ['/abc/abc'],
         ],
         [
           'abc.js',
           'def',
-          ['/abc/def']
+          ['/abc/def'],
         ],
         [
           'abc/abc.js',
           'def',
-          ['/abc/def']
+          ['/abc/def'],
         ],
         [
           'abc/def/def.js',
           'ghi',
-          ['/abc/def/ghi']
+          ['/abc/def/ghi'],
         ],
         [
           'abc/def/def/def.js',
           'ghi',
-          ['/abc/def/def/ghi']
+          ['/abc/def/def/ghi'],
         ],
         [
           'abc/def.js',
           'ghi',
-          ['/abc/def/ghi']
+          ['/abc/def/ghi'],
         ],
         [
           'abc/default.js',
           undefined,
-          ['/abc']
+          ['/abc'],
         ],
         [
           'default.js',
           undefined,
-          ['/']
+          ['/'],
         ],
         [
           'default.js',
           'abc',
-          ['/abc']
+          ['/abc'],
         ],
         [
           'abc.js',
           undefined,
-          ['/abc']
-        ]
+          ['/abc'],
+        ],
       ];
 
       for (let sample of samples) {
@@ -99,18 +99,18 @@ describe('router', () => {
         [
           'abc/def.js',
           undefined,
-          ['/def', '/abc/def']
+          ['/def', '/abc/def'],
         ],
         [
           'abc/def.js',
           'ghi',
-          ['/def/ghi', '/abc/def/ghi']
+          ['/def/ghi', '/abc/def/ghi'],
         ],
         [
           'abc/default.js',
           undefined,
-          ['/', '/abc']
-        ]
+          ['/', '/abc'],
+        ],
       ];
 
       before(() => {
@@ -127,7 +127,6 @@ describe('router', () => {
     });
   });
 
-
   context('#getPossibleViewPaths', () => {
     type Sample = [string, string, string[]];
 
@@ -140,8 +139,8 @@ describe('router', () => {
           'views-root/abc/def/default.hbs',
           'views-root/abc/def/default/default.hbs',
           'views-root/abc/def/def.hbs',
-          'views-root/abc/def/default/def.hbs'
-        ]
+          'views-root/abc/def/default/def.hbs',
+        ],
       ],
       [
         'abc.js',
@@ -151,8 +150,8 @@ describe('router', () => {
           'views-root/abc/def/default.hbs',
           'views-root/abc/def/default/default.hbs',
           'views-root/abc/def/def.hbs',
-          'views-root/abc/def/default/def.hbs'
-        ]
+          'views-root/abc/def/default/def.hbs',
+        ],
       ],
       [
         'abc/def.js',
@@ -162,8 +161,8 @@ describe('router', () => {
           'views-root/abc/def/ghi/default.hbs',
           'views-root/abc/def/ghi/default/default.hbs',
           'views-root/abc/def/ghi/ghi.hbs',
-          'views-root/abc/def/ghi/default/ghi.hbs'
-        ]
+          'views-root/abc/def/ghi/default/ghi.hbs',
+        ],
       ],
       [
         'abc/default.js',
@@ -173,16 +172,16 @@ describe('router', () => {
           'views-root/abc/default.hbs',
           'views-root/abc/default/default.hbs',
           'views-root/abc/abc.hbs',
-          'views-root/abc/default/abc.hbs'
-        ]
+          'views-root/abc/default/abc.hbs',
+        ],
       ],
       [
         'default.js',
         undefined,
         [
           'views-root/default.hbs',
-          'views-root/default/default.hbs'
-        ]
+          'views-root/default/default.hbs',
+        ],
       ],
       [
         'default.js',
@@ -192,8 +191,8 @@ describe('router', () => {
           'views-root/abc/default.hbs',
           'views-root/abc/default/default.hbs',
           'views-root/abc/abc.hbs',
-          'views-root/abc/default/abc.hbs'
-        ]
+          'views-root/abc/default/abc.hbs',
+        ],
       ],
       [
         'abc.js',
@@ -203,9 +202,9 @@ describe('router', () => {
           'views-root/abc/default.hbs',
           'views-root/abc/default/default.hbs',
           'views-root/abc/abc.hbs',
-          'views-root/abc/default/abc.hbs'
-        ]
-      ]
+          'views-root/abc/default/abc.hbs',
+        ],
+      ],
     ];
 
     for (let sample of samples) {

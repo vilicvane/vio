@@ -1,8 +1,8 @@
-import * as Path from 'path';
 import { Server } from 'http';
+import * as Path from 'path';
 
-import * as glob from 'glob';
 import * as express from 'express';
+import * as glob from 'glob';
 
 import { Router } from '../';
 import { createExpressApp, request } from './helpers';
@@ -16,13 +16,13 @@ interface Test {
     all?: TestExpectation;
     development?: TestExpectation;
     production?: TestExpectation;
-  }
+  };
 }
 
 interface TestExpectation {
   status: number;
   contentType: string;
-  content: string | Object;
+  content: string | object;
 }
 
 interface TestConfig {
@@ -34,7 +34,7 @@ interface TestConfig {
 
 describe('sites', () => {
   let siteRoutesDirNames = glob.sync('site-*-routes', {
-    cwd: __dirname
+    cwd: __dirname,
   });
 
   for (let siteRoutesDirname of siteRoutesDirNames) {
@@ -50,7 +50,7 @@ describe('sites', () => {
           defaultSubsite,
           viewsExtension,
           userProvider: toUseUserProvider,
-          tests
+          tests,
         }: TestConfig = require(Path.join(testPath, 'test-config.json'));
 
         before(() => {
@@ -61,7 +61,7 @@ describe('sites', () => {
             viewsRoot: Path.join(testPath, 'views'),
             viewsExtension,
             defaultSubsite,
-            production
+            production,
           });
 
           if (toUseUserProvider) {
@@ -100,7 +100,7 @@ describe('sites', () => {
 
               if (expectation.content) {
                 if (/json/.test(result.contentType)) {
-                  (JSON.parse(result.content) as Object).should.deep.equal(expectation.content);
+                  (JSON.parse(result.content) as object).should.deep.equal(expectation.content);
                 } else {
                   result.content.should.match(new RegExp(expectation.content as string));
                 }

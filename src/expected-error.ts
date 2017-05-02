@@ -7,7 +7,7 @@ export class ExpectedError extends ExtendableError {
   constructor(
     public code: number,
     message = ErrorMessages[code] || ErrorMessages[ErrorCode.unknown],
-    public status = ExpectedError.defaultStatus
+    public status = ExpectedError.defaultStatus,
   ) {
     super(message);
   }
@@ -18,21 +18,19 @@ export class ExpectedError extends ExtendableError {
 export enum ErrorCode {
   none = 0,
 
-  // permission error
+  // Permission error
   permissionDenied = 1000,
 
-  // unknown
-  unknown = -1
+  // Unknown
+  unknown = -1,
 }
 
 export let ErrorMessages: {
   [code: number]: string;
 } = {
   [ErrorCode.unknown]: 'Unknown error.',
-  [ErrorCode.permissionDenied]: 'Permission denied.'
+  [ErrorCode.permissionDenied]: 'Permission denied.',
 };
 
 /** Error transformer */
-export interface ErrorTransformer {
-  (reason: any): any;
-}
+export type ErrorTransformer = (reason: any) => any;

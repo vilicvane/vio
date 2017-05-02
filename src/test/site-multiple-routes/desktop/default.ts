@@ -4,12 +4,12 @@ export default class extends Controller {
   @get()
   default() {
     return {
-      content: 'desktop home'
+      content: 'desktop home',
     };
   }
 
   @get({
-    path: '500'
+    path: '500',
   })
   down() {
     throw new Error();

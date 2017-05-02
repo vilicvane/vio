@@ -6,7 +6,7 @@ export default class DefaultController extends Controller {
   @get()
   default() {
     return {
-      content: this.content
+      content: this.content,
     };
   }
 }

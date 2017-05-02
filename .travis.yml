@@ -4,4 +4,4 @@ node_js:
 before_script:
   - npm run build
 after_script:
-  - npm run coveralls
+  - npm run report-coverage

@@ -1,17 +1,17 @@
 import * as Lodash from 'lodash';
 
 import {
-  RequestUser,
   ExpressRequest,
+  PermissionDescriptor,
+  RequestUser,
   UserProvider,
-  PermissionDescriptor
 } from '../../';
 
 export type TestRoles = string[];
 
 export class TestPermissionDescriptor extends PermissionDescriptor<TestRoles> {
   constructor(
-    public roles: TestRoles
+    public roles: TestRoles,
   ) {
     super();
   }
@@ -27,13 +27,13 @@ export class TestPermissionDescriptor extends PermissionDescriptor<TestRoles> {
 export class TestUserProvider implements UserProvider<RequestUser<TestRoles>> {
   get(req: ExpressRequest): Promise<RequestUser<TestRoles>> {
     return Promise.resolve({
-      permission: ['user']
+      permission: ['user'],
     });
   }
 
   authenticate(req: ExpressRequest): Promise<RequestUser<TestRoles>> {
     return Promise.resolve({
-      permission: ['user', 'admin']
+      permission: ['user', 'admin'],
     });
   }
 }

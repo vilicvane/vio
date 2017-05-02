@@ -4,7 +4,7 @@ export default class extends Controller {
   @get()
   default() {
     return {
-      content: 'mobile home'
+      content: 'mobile home',
     };
   }
 }

@@ -10,11 +10,6 @@ export interface RouterOptions {
 
 // TODO: use string literal type.
 export type HttpMethod = 'all' | 'get' | 'post' | 'put' | 'delete' | 'fetch' | 'head' | 'options';
-// export type HttpMethod = string;
-
-export interface ControllerOptions {
-
-}
 
 export abstract class Controller {
   routes: Route[];
@@ -75,12 +70,12 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
       view,
       authentication = false,
       permission,
-      permissions
+      permissions,
     } = options;
 
     if (!path && name !== 'default') {
       path = hyphenate(name, {
-        lowerCase: true
+        lowerCase: true,
       });
     }
 
@@ -94,7 +89,7 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
       view,
       handler,
       authentication,
-      permissionDescriptor
+      permissionDescriptor,
     });
   };
 }
@@ -116,13 +111,6 @@ export function post<TPermission>(options?: RouteOptions<TPermission>) {
   return route('post', options);
 }
 
-// /** @decorator */
-// export function controller(options: ControllerOptions = {}) {
-//     return (ControllerClass: typeof Controller) => {
-//         // ...
-//     };
-// }
-
 export abstract class PermissionDescriptor<T> {
   abstract validate(userPermission: T): boolean;
 
@@ -137,7 +125,7 @@ export abstract class PermissionDescriptor<T> {
 
 export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
   constructor(
-    public descriptors: PermissionDescriptor<T>[]
+    public descriptors: PermissionDescriptor<T>[],
   ) {
     super();
   }
@@ -155,7 +143,7 @@ export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
 
 export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> {
   constructor(
-    public descriptors: PermissionDescriptor<T>[]
+    public descriptors: PermissionDescriptor<T>[],
   ) {
     super();
   }
