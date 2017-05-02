@@ -2,6 +2,7 @@
   "extends": "vts",
   "rules": {
     "no-require-imports": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "return-undefined": false
   }
 }

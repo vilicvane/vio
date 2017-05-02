@@ -1,6 +1,6 @@
 import * as express from 'express';
 import hyphenate from 'hyphenate';
-import { Promise, Resolvable } from 'thenfail';
+import { Resolvable } from 'villa';
 
 import { Router } from './router';
 

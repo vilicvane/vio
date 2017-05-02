@@ -1,5 +1,7 @@
-/bld/
+/.nyc_output/
 /coverage/
+
+/bld/
 
 /node_modules/
 

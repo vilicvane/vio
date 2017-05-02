@@ -1,5 +1,4 @@
 import * as sendRequest from 'request';
-import Promise from 'thenfail';
 
 export interface RequestResult {
   status: number;

@@ -16,7 +16,7 @@ import {
   Router as ExpressRouter,
 } from 'express';
 
-import { Promise } from 'thenfail';
+import * as v from 'villa';
 
 import {
   Controller,
@@ -504,19 +504,16 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
   }
 
   private processRequest(req: ExpressRequest, res: ExpressResponse, route: Route, next: Function): void {
-    Promise
-      .then(() => {
-        if (this.userProvider) {
-          if (route.authentication) {
-            return this.userProvider.authenticate(req);
-          } else {
-            return this.userProvider.get(req);
-          }
-        } else {
-          return undefined;
-        }
-      })
-      .then(user => {
+    // tslint:disable:no-floating-promises
+    (async () => {
+      try {
+
+        let user = this.userProvider ?
+          route.authentication ?
+            await this.userProvider.authenticate(req) :
+            await this.userProvider.get(req) :
+          undefined;
+
         let permissionDescriptor = route.permissionDescriptor;
 
         if (
@@ -527,37 +524,27 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
         }
 
         (req as Request<RequestUser<any>>).user = user;
-      })
-      .then(() => route.handler(req as Request<RequestUser<any>>, res))
-      .then((result: object) => {
+
+        let result = await route.handler(req as Request<RequestUser<any>>, res);
+
         if (res.headersSent) {
           if (result) {
             console.warn(`Header has already been sent, but the route handler returns a non-null value.
 ${route.handler.toString()}`);
           }
 
-          return undefined;
+          return;
         }
 
         // Handle specified response.
         if (result instanceof Response) {
           result.applyTo(res);
         } else if (route.resolvedView) {
-          return new Promise<void>((resolve, reject) => {
-            res.render(route.resolvedView, result, (error, html) => {
-              if (error) {
-                reject(error);
-              } else {
-                res.send(html);
-                resolve();
-              }
-            });
-          });
+          res.send(await v.call(res.render.bind(res), route.resolvedView, result));
         } else {
           new JSONDataResponse(result).applyTo(res);
         }
-      })
-      .fail(error => {
+      } catch (error) {
         if (this.errorTransformer) {
           error = this.errorTransformer(error) || error;
         }
@@ -567,10 +554,14 @@ ${route.handler.toString()}`);
         }
 
         if (!(error instanceof ExpectedError)) {
-          throw error;
+          if (error instanceof Error) {
+            console.warn(error.stack || error.message);
+          } else {
+            console.warn(error);
+          }
         }
-      })
-      .log();
+      }
+    })();
   }
 
   private handleNotFound(req: ExpressRequest, res: ExpressResponse): void {
