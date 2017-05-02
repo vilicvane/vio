@@ -17,10 +17,10 @@ describe('router', () => {
         getPossibleRoutePaths: (Router.prototype as any).getPossibleRoutePaths,
         getPossibleViewPaths: (Router.prototype as any).getPossibleViewPaths
     };
-    
+
     context('#getPossibleRoutePaths', () => {
         type Sample = [string, string, string[]];
-        
+
         context('default subsite not configured', () => {
             let samples: Sample[] = [
                 [
@@ -84,7 +84,7 @@ describe('router', () => {
                     ['/abc']
                 ]
             ];
-            
+
             for (let sample of samples) {
                 it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
                     router
@@ -93,7 +93,7 @@ describe('router', () => {
                 });
             }
         });
-        
+
         context('default subsite configured as "abc"', () => {
             let samples: Sample[] = [
                 [
@@ -112,11 +112,11 @@ describe('router', () => {
                     ['/', '/abc']
                 ]
             ];
-            
+
             before(() => {
                 router.defaultSubsite = 'abc';
             });
-            
+
             for (let sample of samples) {
                 it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
                     router
@@ -126,11 +126,11 @@ describe('router', () => {
             }
         });
     });
-    
-    
+
+
     context('#getPossibleViewPaths', () => {
         type Sample = [string, string, string[]];
-        
+
         let samples: Sample[] = [
             [
                 'abc/def.js',
@@ -207,18 +207,18 @@ describe('router', () => {
                 ]
             ]
         ];
-        
+
         for (let sample of samples) {
             it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
                 let paths = router.getPossibleViewPaths(sample[0], sample[1]);
                 let expectedPaths = sample[2];
-                
+
                 paths.length.should.equal(expectedPaths.length);
-                
+
                 for (let i = 0; i < paths.length; i++) {
                     let path = paths[i];
                     let expectedPath = expectedPaths[i];
-                    
+
                     Path.relative(path, expectedPath).should.equal('');
                 }
             });

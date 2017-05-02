@@ -30,77 +30,77 @@ export default class DefaultController extends Controller {
             content: 'default'
         };
     }
-    
+
     @route('get')
     list() {
         return 'list';
     }
-    
+
     @post({
         path: 'u/:user'
     })
     user(req: Request<any>) {
         return req.params['user'];
     }
-    
+
     @get()
     oops() {
         throw new ExpectedError(0, 'html 500');
     }
-    
+
     @get()
     ouch() {
         throw new ExpectedError(1234);
     }
-    
+
     @get()
     moduleCache() {
         return Test1.foo === Test2.foo;
     }
-    
+
     @get({
         permission: TestPermissionDescriptor.admin
     })
     permissionDenied() { }
-    
+
     @get({
         permissions: [TestPermissionDescriptor.admin, TestPermissionDescriptor.user]
     })
     permissionGranted() { }
-    
+
     @get({
         permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user)
     })
     permissionDeniedAnd() { }
-    
+
     @get({
         authentication: true,
         permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user)
     })
     permissionGrantedAnd() { }
-    
+
     @get()
     redirect() {
         return new Redirection('/');
     }
-    
+
     @get()
     jsonRedirect() {
         return new JSONRedirection('/');
     }
-    
+
     @get()
     jsonResponse() {
         return new JSONResponse({
             foo: 'bar'
         });
     }
-    
+
     @get()
     streamResponse() {
         let path = Path.join(__dirname, '../../../src/test/data/stream.txt');
         let stream = FS.createReadStream(path);
-        
+
         return new Response('text/html', stream);
     }
 }

@@ -16,7 +16,7 @@ export function request(method: string, url: string): Promise<RequestResult> {
                 reject(error);
                 return;
             }
-            
+
             resolve({
                 status: res.statusCode,
                 contentType: res.headers['content-type'],

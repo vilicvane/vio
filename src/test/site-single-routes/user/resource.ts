@@ -5,7 +5,7 @@ export default class extends Controller {
     get() {
         return 'get';
     }
-    
+
     @method()
     post() {
         return 'post';

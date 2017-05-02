@@ -1,7 +1,7 @@
-import * as Module from 'module';
 import * as FS from 'fs';
 import * as Path from 'path';
 
+const Module = require('module');
 const originalJSResolver = Module._extensions['.js'];
 
 let lastModifiedTimestamps = new Map<string, number>();
@@ -37,7 +37,7 @@ function stripBOM(content: string) {
     return content;
 }
 
-Module._extensions['.js'] = (module, filename) => {
+Module._extensions['.js'] = (module: any, filename: string) => {
     if (!lastModifiedTimestamps.has(filename)) {
         return originalJSResolver(module, filename);
     }

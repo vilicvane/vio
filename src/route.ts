@@ -9,8 +9,8 @@ export interface RouterOptions {
 }
 
 // TODO: use string literal type.
-// export type HttpMethod = 'all' | 'get' | 'post' | 'put' | 'delete' | 'fetch' | 'head' | 'options';
-export type HttpMethod = string;
+export type HttpMethod = 'all' | 'get' | 'post' | 'put' | 'delete' | 'fetch' | 'head' | 'options';
+// export type HttpMethod = string;
 
 export interface ControllerOptions {
 

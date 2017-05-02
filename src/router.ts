@@ -27,6 +27,7 @@ import {
     PermissionDescriptor,
     UserProvider,
     RequestUser,
+    Request,
     Response,
     JSONDataResponse,
     JSONErrorResponse,
@@ -90,7 +91,7 @@ export class Router {
     /** Express application. */
     app: _Express;
 
-    /** Actual router behind the scence. */
+    /** Actual router behind the scene. */
     router: ExpressRouter;
 
     /** Error transformer. */
@@ -181,7 +182,7 @@ export class Router {
 
     /**
      * @production
-     * Attouch routes synchronously when starting up in production environment.
+     * Attach routes synchronously when starting up in production environment.
      */
     private attachRoutes(): void {
         console.log('loading routes...');
@@ -213,11 +214,11 @@ export class Router {
 
     /**
      * @development
-     * Attach routes dynamicly and synchronously based on request path.
+     * Attach routes dynamically and synchronously based on request path.
      * Used only at development.
      */
     private attachRoutesDynamically(requestPath: string): void {
-        console.log('dynamicly loading possible routes...');
+        console.log('dynamically loading possible routes...');
 
         this.replaceRouter();
 
@@ -339,7 +340,7 @@ ${error.stack}`);
     /**
      * @development
      * Split request path to parts.
-     * e.g., "/abc/def/ghi?query=xyz" would be splitted to:
+     * e.g., "/abc/def/ghi?query=xyz" would be split to:
      * ["abc", "def", "ghi"]
      */
     private static splitRequestPath(path: string): string[] {
@@ -523,9 +524,9 @@ ${error.stack}`);
                     throw new ExpectedError(ErrorCode.permissionDenied, 'Permission denied', 403);
                 }
 
-                req.user = user;
+                (req as Request<RequestUser<any>>).user = user;
             })
-            .then(() => route.handler(req, res))
+            .then(() => route.handler(req as Request<RequestUser<any>>, res))
             .then((result: Object | Response) => {
                 if (res.headersSent) {
                     if (result) {

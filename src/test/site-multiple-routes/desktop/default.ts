@@ -7,7 +7,7 @@ export default class extends Controller {
             content: 'desktop home'
         };
     }
-    
+
     @get({
         path: '500'
     })

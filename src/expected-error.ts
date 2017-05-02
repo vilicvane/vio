@@ -11,16 +11,16 @@ export class ExpectedError extends ExtendableError {
     ) {
         super(message);
     }
-    
+
     static defaultStatus = 500;
 }
 
 export enum ErrorCode {
     none = 0,
-    
+
     // permission error
     permissionDenied = 1000,
-    
+
     // unknown
     unknown = -1
 }
