@@ -583,7 +583,7 @@ ${route.handler.toString()}`);
   }
 
   private renderErrorPage(req: ExpressRequest, res: ExpressResponse, expectedError: ExpectedError): void {
-    let { status, message } = expectedError;
+    let { code, message, status } = expectedError;
 
     res.status(status);
 
@@ -600,7 +600,7 @@ ${route.handler.toString()}`);
 
       res
         .type('text/html')
-        .send(`${message}<br />
+        .send(`${message || code}<br />
 Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`);
     }
   }
