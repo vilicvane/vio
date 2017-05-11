@@ -70,7 +70,7 @@ export class JSONErrorResponse extends Response {
     } else {
       status = status || 200;
       code = code || 'UNKNOWN';
-      message = message || defaultErrorMessages[code] || code;
+      message = message || defaultErrorMessages[code];
     }
 
     let json = JSON.stringify({

@@ -19,7 +19,7 @@ export class ExpectedError extends ExtendableError {
       message = undefined;
     }
 
-    super(message || defaultErrorMessages[code] || code);
+    super(message || defaultErrorMessages[code]);
 
     this.code = code;
     this.status = status || ExpectedError.defaultStatus;
