@@ -600,7 +600,7 @@ ${route.handler.toString()}`);
 
       res
         .type('text/html')
-        .send(`${message} (${status}).<br />
+        .send(`${message}<br />
 Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github.com/vilic/vio</a>.`);
     }
   }

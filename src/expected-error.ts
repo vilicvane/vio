@@ -33,6 +33,7 @@ export const defaultErrorMessages: {
 } = {
   UNKNOWN: 'Unknown error.',
   PERMISSION_DENIED: 'Permission denied.',
+  NOT_FOUND: 'Page not found.',
 };
 
 /** Error transformer */
