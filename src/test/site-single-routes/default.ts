@@ -45,12 +45,12 @@ export default class DefaultController extends Controller {
 
   @get()
   oops() {
-    throw new ExpectedError(0, 'html 500');
+    throw new ExpectedError('INTERNAL_ERROR', 'html 500');
   }
 
   @get()
   ouch() {
-    throw new ExpectedError(1234);
+    throw new ExpectedError('INTERNAL_ERROR_1234');
   }
 
   @get()

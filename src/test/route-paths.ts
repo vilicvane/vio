@@ -5,11 +5,11 @@ import { Router } from '../';
 
 describe('router', () => {
   let router: {
-    defaultSubsite: string;
+    defaultSubsite: string | undefined;
     viewsRoot: string;
     viewsExtension: string;
-    getPossibleRoutePaths(routeFilePath: string, routePath: string): string;
-    getPossibleViewPaths(routeFilePath: string, routePath: string): string;
+    getPossibleRoutePaths(routeFilePath: string, routePath: string | undefined): string;
+    getPossibleViewPaths(routeFilePath: string, routePath: string | undefined): string;
   } = {
     defaultSubsite: undefined,
     viewsRoot: 'views-root',
@@ -19,7 +19,7 @@ describe('router', () => {
   };
 
   context('#getPossibleRoutePaths', () => {
-    type Sample = [string, string, string[]];
+    type Sample = [string, string | undefined, string[]];
 
     context('default subsite not configured', () => {
       let samples: Sample[] = [
@@ -128,7 +128,7 @@ describe('router', () => {
   });
 
   context('#getPossibleViewPaths', () => {
-    type Sample = [string, string, string[]];
+    type Sample = [string, string | undefined, string[]];
 
     let samples: Sample[] = [
       [

@@ -3,22 +3,23 @@ import { Readable } from 'stream';
 import { Response as ExpressResponse } from 'express';
 
 import {
-  ErrorCode,
-  ErrorMessages,
   ExpectedError,
-} from './';
+  defaultErrorMessages,
+} from '.';
 
 export class Response {
   constructor(
-    public type: string,
-    public content: string | Buffer | Readable,
+    public type: string | undefined,
+    public content: string | Buffer | Readable | undefined,
     public status = 200,
   ) { }
 
   applyTo(res: ExpressResponse): void {
-    res
-      .status(this.status)
-      .type(this.type);
+    res.status(this.status);
+
+    if (this.type) {
+      res.type(this.type);
+    }
 
     let content = this.content;
 
@@ -59,18 +60,18 @@ export class JSONDataResponse<T> extends Response {
 
 export class JSONErrorResponse extends Response {
   constructor(error: any, status?: number) {
-    let code: number;
-    let message: string;
+    let code: string | undefined;
+    let message: string | undefined;
 
     if (error instanceof ExpectedError) {
       status = status || error.status;
       code = error.code;
       message = error.message;
+    } else {
+      status = status || 500;
+      code = code || 'UNKNOWN';
+      message = message || defaultErrorMessages[code] || code;
     }
-
-    status = status || 500;
-    code = code || ErrorCode.unknown;
-    message = message || ErrorMessages[code] || ErrorMessages[ErrorCode.unknown];
 
     let json = JSON.stringify({
       error: {

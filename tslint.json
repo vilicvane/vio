@@ -3,6 +3,7 @@
   "rules": {
     "no-require-imports": false,
     "no-var-requires": false,
-    "return-undefined": false
+    "return-undefined": false,
+    "no-console": false
   }
 }

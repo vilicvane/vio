@@ -39,22 +39,22 @@ export interface RouteOptions<TPermission> extends MethodOptions<TPermission> {
 
 export interface Route {
   method: string;
-  path: string;
-  view: string;
+  path: string | undefined;
+  view: string | undefined;
   resolvedView?: string;
   handler: RouteHandler;
   authentication: boolean;
   permissionDescriptor?: PermissionDescriptor<any>;
 }
 
-export interface Request<TUser extends RequestUser<any>> extends express.Request {
+export interface Request<TUser> extends express.Request {
   user: TUser;
 }
 
 export type ExpressRequest = express.Request;
 export type ExpressResponse = express.Response;
 
-export type RouteHandler = (req: Request<RequestUser<any>>, res: ExpressResponse) => any;
+export type RouteHandler = (req: Request<any>, res: ExpressResponse) => any;
 
 /** @decorator */
 export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPermission> = {}) {
@@ -159,11 +159,7 @@ export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> 
   }
 }
 
-export interface RequestUser<TPermission> {
-  permission: TPermission;
-}
-
-export interface UserProvider<T extends RequestUser<any>> {
+export interface UserProvider<T> {
   get(req: ExpressRequest): Resolvable<T>;
   authenticate(req: ExpressRequest): Resolvable<T>;
 }

@@ -89,7 +89,7 @@ describe('sites', () => {
               production ?
                 test.expected.production :
                 test.expected.development
-            );
+            )!;
 
             return request(test.method, baseUrl + test.path).then(result => {
               result.status.should.equal(expectation.status);

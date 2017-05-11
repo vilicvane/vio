@@ -149,7 +149,7 @@
         "all": {
           "status": 500,
           "contentType": "text/html",
-          "content": "Unknown error"
+          "content": "INTERNAL_ERROR_1234"
         }
       }
     },

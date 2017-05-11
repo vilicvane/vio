@@ -15,7 +15,7 @@ export function request(method: string, url: string): Promise<RequestResult> {
       }
 
       resolve({
-        status: res.statusCode,
+        status: res.statusCode!,
         contentType: res.headers['content-type'],
         content,
       });

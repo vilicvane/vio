@@ -20,8 +20,6 @@ import * as v from 'villa';
 
 import {
   Controller,
-  ErrorCode,
-  ErrorMessages,
   ErrorTransformer,
   ExpectedError,
   HttpMethod,
@@ -29,12 +27,12 @@ import {
   JSONErrorResponse,
   PermissionDescriptor,
   Request,
-  RequestUser,
   Response,
   Route,
   RouteHandler,
   RouteOptions,
   UserProvider,
+  defaultErrorMessages,
 } from './';
 
 /**
@@ -101,7 +99,7 @@ export class Router {
   errorTransformer: ErrorTransformer;
 
   /** User provider. */
-  userProvider: UserProvider<RequestUser<any>>;
+  userProvider: UserProvider<any>;
 
   /** Whether running under production mode. */
   production: boolean;
@@ -359,7 +357,7 @@ ${error.stack}`);
   private fsExistsSync(path: string): boolean {
     if (this.production) {
       if (this.pathExistenceCache.has(path)) {
-        return this.pathExistenceCache.get(path);
+        return this.pathExistenceCache.get(path)!;
       } else {
         let exists = FS.existsSync(path);
         this.pathExistenceCache.set(path, exists);
@@ -371,12 +369,12 @@ ${error.stack}`);
   }
 
   private attachRoutesOnController(ControllerClass: typeof Controller, routeFilePath: string): void {
-    let controller: Controller;
-    let routes: Route[];
+    let controller: Controller | undefined;
+    let routes: Route[] | undefined;
 
     if (typeof ControllerClass === 'function') {
       controller = new (ControllerClass as any)();
-      routes = controller.routes;
+      routes = controller!.routes;
     }
 
     if (!routes) {
@@ -412,7 +410,7 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
     };
   }
 
-  private getPossibleRoutePaths(routeFilePath: string, routePath: string): string[] {
+  private getPossibleRoutePaths(routeFilePath: string, routePath: string | undefined): string[] {
     let pathParts = Router.splitRouteFilePath(routeFilePath);
 
     let firstPart = pathParts.shift();
@@ -451,7 +449,7 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
     });
   }
 
-  private resolveViewPath(routeFilePath: string, route: Route): string {
+  private resolveViewPath(routeFilePath: string, route: Route): string | undefined {
     if (route.view) {
       return Path.join(this.viewsRoot, route.view);
     }
@@ -471,7 +469,7 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
     return undefined;
   }
 
-  private getPossibleViewPaths(routeFilePath: string, routePath: string): string[] {
+  private getPossibleViewPaths(routeFilePath: string, routePath: string | undefined): string[] {
     let pathParts = Router.splitRouteFilePath(routeFilePath);
 
     if (routePath) {
@@ -520,12 +518,12 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
           permissionDescriptor &&
           !permissionDescriptor.validate(user && user.permission)
         ) {
-          throw new ExpectedError(ErrorCode.permissionDenied, 'Permission denied', 403);
+          throw new ExpectedError('PERMISSION_DENIED', 403);
         }
 
-        (req as Request<RequestUser<any>>).user = user;
+        (req as Request<any>).user = user;
 
-        let result = await route.handler(req as Request<RequestUser<any>>, res);
+        let result = await route.handler(req as Request<any>, res);
 
         if (res.headersSent) {
           if (result) {
@@ -565,7 +563,7 @@ ${route.handler.toString()}`);
   }
 
   private handleNotFound(req: ExpressRequest, res: ExpressResponse): void {
-    this.renderErrorPage(req, res, new ExpectedError(ErrorCode.none, 'Page not Found', 404));
+    this.renderErrorPage(req, res, new ExpectedError('NOT_FOUND', 404));
   }
 
   private handleServerError(req: ExpressRequest, res: ExpressResponse, error: Error, hasView: boolean): void {
@@ -575,7 +573,7 @@ ${route.handler.toString()}`);
       if (error instanceof ExpectedError) {
         expectedError = error;
       } else {
-        expectedError = new ExpectedError(ErrorCode.unknown, undefined, 500);
+        expectedError = new ExpectedError();
       }
 
       this.renderErrorPage(req, res, expectedError);
@@ -607,7 +605,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
     }
   }
 
-  private findErrorPageViewPath(requestPath: string, status: number): string {
+  private findErrorPageViewPath(requestPath: string, status: number): string | undefined {
     let statusStr = status.toString();
     let subsiteName = this.getSubsiteName(requestPath) || '';
 
@@ -638,7 +636,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
   }
 
   private getSubsiteName(requestPath: string): string {
-    let part = /\/[^/?]+|/.exec(requestPath)[0];
+    let part = (/\/[^/?]+|/.exec(requestPath) || [])[0];
 
     if (part) {
       let subsiteDir = Path.join(this.routesRoot, part);
@@ -683,7 +681,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
     let parts: string[] = [];
 
     // tslint:disable-next-line:no-conditional-assignment
-    while (part = regex.exec(path)[1]) {
+    while (part = (regex.exec(path) || [])[1]) {
       parts.push(part);
     }
 

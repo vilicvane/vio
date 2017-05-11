@@ -4,32 +4,35 @@ import ExtendableError from 'extendable-error';
  * ExpectedError class.
  */
 export class ExpectedError extends ExtendableError {
+  code: string;
+  status: number;
+
+  constructor(code?: string, status?: number);
+  constructor(code: string, message: string, status?: number);
   constructor(
-    public code: number,
-    message = ErrorMessages[code] || ErrorMessages[ErrorCode.unknown],
-    public status = ExpectedError.defaultStatus,
+    code = 'UNKNOWN',
+    message?: string | number,
+    status?: number,
   ) {
-    super(message);
+    if (typeof message === 'number') {
+      status = message;
+      message = undefined;
+    }
+
+    super(message || defaultErrorMessages[code] || code);
+
+    this.code = code;
+    this.status = status || ExpectedError.defaultStatus;
   }
 
   static defaultStatus = 500;
 }
 
-export enum ErrorCode {
-  none = 0,
-
-  // Permission error
-  permissionDenied = 1000,
-
-  // Unknown
-  unknown = -1,
-}
-
-export let ErrorMessages: {
-  [code: number]: string;
+export const defaultErrorMessages: {
+  [code: string]: string;
 } = {
-  [ErrorCode.unknown]: 'Unknown error.',
-  [ErrorCode.permissionDenied]: 'Permission denied.',
+  UNKNOWN: 'Unknown error.',
+  PERMISSION_DENIED: 'Permission denied.',
 };
 
 /** Error transformer */

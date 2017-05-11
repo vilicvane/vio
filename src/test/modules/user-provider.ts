@@ -3,11 +3,14 @@ import * as Lodash from 'lodash';
 import {
   ExpressRequest,
   PermissionDescriptor,
-  RequestUser,
   UserProvider,
 } from '../../';
 
 export type TestRoles = string[];
+
+export interface RequestUser<T> {
+  permission: T;
+}
 
 export class TestPermissionDescriptor extends PermissionDescriptor<TestRoles> {
   constructor(

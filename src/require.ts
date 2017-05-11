@@ -5,7 +5,7 @@ const Module = require('module');
 const originalJSResolver = Module._extensions['.js'];
 
 let lastModifiedTimestamps = new Map<string, number>();
-let locks: Set<string>;
+let locks: Set<string> | undefined;
 
 /**
  * Lock a file in case it changes during a single event loop.
