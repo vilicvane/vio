@@ -68,7 +68,7 @@ export class JSONErrorResponse extends Response {
       code = error.code;
       message = error.message;
     } else {
-      status = status || 500;
+      status = status || 200;
       code = code || 'UNKNOWN';
       message = message || defaultErrorMessages[code] || code;
     }
