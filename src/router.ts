@@ -373,8 +373,8 @@ ${error.stack}`);
     let routes: Route[] | undefined;
 
     if (typeof ControllerClass === 'function') {
-      controller = new (ControllerClass as any)();
-      routes = controller!.routes;
+      controller = new (ControllerClass as any)() as Controller;
+      routes = controller.routes;
     }
 
     if (!routes) {
