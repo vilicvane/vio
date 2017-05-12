@@ -184,7 +184,7 @@ export class Router {
    * Attach routes synchronously when starting up in production environment.
    */
   private attachRoutes(): void {
-    console.log('loading routes...');
+    console.log('Loading routes...');
 
     let routeFilePaths = glob.sync('**/*.js', {
       cwd: this.routesRoot,
@@ -217,7 +217,7 @@ export class Router {
    * Used only at development.
    */
   private attachRoutesDynamically(requestPath: string): void {
-    console.log('dynamically loading possible routes...');
+    console.log('Dynamically loading possible routes...');
 
     this.replaceRouter();
 
