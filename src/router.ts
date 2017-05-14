@@ -1,6 +1,7 @@
 /* tslint:disable:member-ordering */
 import * as FS from 'fs';
 import * as Path from 'path';
+import * as Util from 'util';
 
 import * as Chalk from 'chalk';
 import * as glob from 'glob';
@@ -552,11 +553,12 @@ ${route.handler.toString()}`);
         }
 
         if (!(error instanceof ExpectedError)) {
-          if (error instanceof Error) {
-            console.warn(error.stack || error.message);
-          } else {
-            console.warn(error);
-          }
+          let output = typeof error === 'string' ?
+            error :
+            error instanceof Error ?
+              error.stack || error.message :
+              Util.inspect(error);
+          console.warn(Chalk.red(output));
         }
       }
     })();
