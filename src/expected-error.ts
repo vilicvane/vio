@@ -10,7 +10,7 @@ export class ExpectedError extends ExtendableError {
   constructor(code?: string, status?: number);
   constructor(code: string, message: string, status?: number);
   constructor(
-    code = 'UNKNOWN',
+    code: string = 'UNKNOWN',
     message?: string | number,
     status?: number,
   ) {
@@ -19,22 +19,49 @@ export class ExpectedError extends ExtendableError {
       message = undefined;
     }
 
-    super(message || defaultErrorMessages[code]);
+    let errorDefault = errorDefaults[code];
+
+    if (errorDefault) {
+      status = status || errorDefault.status || 200;
+      message = message || errorDefault.message;
+    } else {
+      errorDefault = errorDefaults['UNKNOWN'];
+      status = status || errorDefault.status;
+      message = message || code;
+    }
+
+    super(message);
 
     this.code = code;
-    this.status = status || ExpectedError.defaultStatus;
+    this.status = status;
   }
-
-  static defaultStatus = 500;
 }
 
-export const defaultErrorMessages: {
-  [code: string]: string;
-} = {
-  UNKNOWN: 'Unknown error.',
-  PERMISSION_DENIED: 'Permission denied.',
-  NOT_FOUND: 'Page not found.',
+export interface ErrorDefault {
+  status: number;
+  message: string;
+}
+
+export const builtInErrorDefaults = {
+  UNKNOWN: {
+    status: 500,
+    message: 'Unknown error',
+  },
+  INTERNAL_ERROR: {
+    status: 500,
+    message: 'Internal error',
+  },
+  PERMISSION_DENIED: {
+    status: 403,
+    message: 'Permission denied',
+  },
+  NOT_FOUND: {
+    status: 404,
+    message: 'Not found',
+  },
 };
+
+export const errorDefaults: { [key: string]: ErrorDefault; } = builtInErrorDefaults;
 
 /** Error transformer */
 export type ErrorTransformer = (reason: any) => any;

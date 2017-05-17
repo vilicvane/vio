@@ -50,7 +50,7 @@ export default class DefaultController extends Controller {
 
   @get()
   ouch() {
-    throw new ExpectedError('INTERNAL_ERROR_1234');
+    throw new ExpectedError('INTERNAL_ERROR_1234' as any);
   }
 
   @get()

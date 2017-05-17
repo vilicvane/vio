@@ -4,7 +4,7 @@ import { Response as ExpressResponse } from 'express';
 
 import {
   ExpectedError,
-  defaultErrorMessages,
+  errorDefaults,
 } from '.';
 
 export class Response {
@@ -68,9 +68,18 @@ export class JSONErrorResponse extends Response {
       code = error.code;
       message = error.message;
     } else {
-      status = status || 200;
       code = code || 'UNKNOWN';
-      message = message || defaultErrorMessages[code];
+
+      let errorDefault = errorDefaults[code];
+
+      if (errorDefault) {
+        status = status || errorDefault.status || 200;
+        message = message || errorDefault.message;
+      } else {
+        errorDefault = errorDefaults['UNKNOWN'];
+        status = status || errorDefault.status;
+        message = message || code;
+      }
     }
 
     let json = JSON.stringify({

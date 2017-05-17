@@ -33,7 +33,7 @@ import {
   RouteHandler,
   RouteOptions,
   UserProvider,
-  defaultErrorMessages,
+  errorDefaults,
 } from './';
 
 /**
