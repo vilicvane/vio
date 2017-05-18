@@ -26,6 +26,7 @@ import {
   HttpMethod,
   JSONDataResponse,
   JSONErrorResponse,
+  JSONRedirection,
   PermissionDescriptor,
   Request,
   Response,
@@ -506,7 +507,6 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
     // tslint:disable:no-floating-promises
     (async () => {
       try {
-
         let user = this.userProvider ?
           route.authentication ?
             await this.userProvider.authenticate(req) :
@@ -515,11 +515,22 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
 
         let permissionDescriptor = route.permissionDescriptor;
 
-        if (
-          permissionDescriptor &&
-          !permissionDescriptor.validate(user && user.permission)
-        ) {
-          throw new ExpectedError('PERMISSION_DENIED', 403);
+        let validationResult = permissionDescriptor ?
+          permissionDescriptor.validate(user && user.permission) :
+          true;
+
+        if (typeof validationResult === 'string') {
+          if (route.resolvedView) {
+            res.redirect(validationResult);
+          } else {
+            new JSONRedirection(validationResult).applyTo(res);
+          }
+
+          return;
+        }
+
+        if (!validationResult) {
+          throw new ExpectedError('PERMISSION_DENIED');
         }
 
         (req as Request<any>).user = user;

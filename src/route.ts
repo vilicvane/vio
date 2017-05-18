@@ -112,7 +112,7 @@ export function post<TPermission>(options?: RouteOptions<TPermission>) {
 }
 
 export abstract class PermissionDescriptor<T> {
-  abstract validate(userPermission: T): boolean;
+  abstract validate(userPermission: T): boolean | string;
 
   static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
     return new CompoundOrPermissionDescriptor<T>(permissions);
@@ -130,14 +130,22 @@ export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
     super();
   }
 
-  validate(permission: T): boolean {
+  validate(permission: T): boolean | string {
+    let redirection: string | undefined;
+
     for (let descriptor of this.descriptors) {
-      if (descriptor.validate(permission)) {
-        return true;
+      let result = descriptor.validate(permission);
+
+      if (typeof result !== 'string') {
+        if (result) {
+          return true;
+        }
+      } else if (typeof redirection !== 'string') {
+        redirection = result;
       }
     }
 
-    return false;
+    return typeof redirection === 'string' ? redirection : false;
   }
 }
 
@@ -148,10 +156,16 @@ export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> 
     super();
   }
 
-  validate(permission: T): boolean {
+  validate(permission: T): boolean | string {
     for (let descriptor of this.descriptors) {
-      if (!descriptor.validate(permission)) {
-        return false;
+      let result = descriptor.validate(permission);
+
+      if (typeof result !== 'string') {
+        if (!result) {
+          return false;
+        }
+      } else {
+        return result;
       }
     }
 
