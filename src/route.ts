@@ -73,7 +73,7 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
       permissions,
     } = options;
 
-    if (!path && name !== 'default') {
+    if (typeof path !== 'string' && name !== 'default') {
       path = hyphenate(name, {
         lowerCase: true,
       });
