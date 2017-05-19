@@ -28,6 +28,7 @@ import {
   JSONErrorResponse,
   JSONRedirection,
   PermissionDescriptor,
+  Redirection,
   Request,
   Response,
   Route,
@@ -521,7 +522,7 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
 
         if (typeof validationResult === 'string') {
           if (route.resolvedView) {
-            res.redirect(validationResult);
+            new Redirection(validationResult).applyTo(res);
           } else {
             new JSONRedirection(validationResult).applyTo(res);
           }

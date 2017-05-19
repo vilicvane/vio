@@ -40,7 +40,8 @@ export class Redirection extends Response {
   }
 
   applyTo(res: ExpressResponse): void {
-    res.redirect(this.status, this.url);
+    res.header('Cache-Control', 'no-cache');
+    res.redirect(this.url, this.status);
   }
 }
 
