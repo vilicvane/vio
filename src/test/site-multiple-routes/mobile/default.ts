@@ -1,4 +1,4 @@
-import { Controller, get } from '../../../';
+import {Controller, get} from '../../../';
 
 export default class extends Controller {
   @get()

@@ -1,4 +1,4 @@
-import { Controller, method } from '../../../';
+import {Controller, method} from '../../../';
 
 export default class extends Controller {
   @method()

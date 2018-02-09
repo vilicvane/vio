@@ -31,7 +31,7 @@ function lock(path: string): boolean {
 }
 
 function stripBOM(content: string) {
-  if (content.charCodeAt(0) === 0xFEFF) {
+  if (content.charCodeAt(0) === 0xfeff) {
     content = content.slice(1);
   }
   return content;
@@ -45,7 +45,9 @@ Module._extensions['.js'] = (module: any, filename: string) => {
   let content = FS.readFileSync(filename, 'utf-8');
 
   content = stripBOM(content);
-  content = `require = require(${JSON.stringify(__filename)})(require, module);${content}`;
+  content = `require = require(${JSON.stringify(
+    __filename,
+  )})(require, module);${content}`;
 
   module._compile(content, filename);
 };

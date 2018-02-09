@@ -1,10 +1,8 @@
+// tslint:disable:no-implicit-dependencies
+
 import * as Lodash from 'lodash';
 
-import {
-  ExpressRequest,
-  PermissionDescriptor,
-  UserProvider,
-} from '../../';
+import {ExpressRequest, PermissionDescriptor, UserProvider} from '../../';
 
 export type TestRoles = string[];
 
@@ -13,9 +11,7 @@ export interface RequestUser<T> {
 }
 
 export class TestPermissionDescriptor extends PermissionDescriptor<TestRoles> {
-  constructor(
-    public roles: TestRoles,
-  ) {
+  constructor(public roles: TestRoles) {
     super();
   }
 

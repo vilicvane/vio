@@ -1,10 +1,11 @@
 /bld/test/
 /src/
 /test/
-/typings/
+/types/
 /coverage/
 
 .*
 *.js.map
 tsconfig.json
 tslint.json
+prettier.config.js

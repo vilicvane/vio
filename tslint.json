@@ -1,9 +1,8 @@
 {
-  "extends": "vts",
+  "extends": "vts/tslint-prettier",
   "rules": {
     "no-require-imports": false,
     "no-var-requires": false,
-    "return-undefined": false,
     "no-console": false
   }
 }

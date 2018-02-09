@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 import * as sendRequest from 'request';
 
 export interface RequestResult {
@@ -8,15 +10,15 @@ export interface RequestResult {
 
 export function request(method: string, url: string): Promise<RequestResult> {
   return new Promise<RequestResult>((resolve, reject) => {
-    sendRequest(url, { method }, (error, res, content) => {
+    sendRequest(url, {method}, (error, res, content) => {
       if (error) {
         reject(error);
         return;
       }
 
       resolve({
-        status: res.statusCode!,
-        contentType: res.headers['content-type'],
+        status: res.statusCode,
+        contentType: res.headers['content-type']!,
         content,
       });
     });

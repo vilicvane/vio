@@ -1,15 +1,21 @@
 import * as Path from 'path';
-import { inspect } from 'util';
+import {inspect} from 'util';
 
-import { Router } from '../';
+import {Router} from '../';
 
 describe('router', () => {
   let router: {
     defaultSubsite: string | undefined;
     viewsRoot: string;
     viewsExtension: string;
-    getPossibleRoutePaths(routeFilePath: string, routePath: string | undefined): string;
-    getPossibleViewPaths(routeFilePath: string, routePath: string | undefined): string;
+    getPossibleRoutePaths(
+      routeFilePath: string,
+      routePath: string | undefined,
+    ): string;
+    getPossibleViewPaths(
+      routeFilePath: string,
+      routePath: string | undefined,
+    ): string;
   } = {
     defaultSubsite: undefined,
     viewsRoot: 'views-root',
@@ -23,70 +29,24 @@ describe('router', () => {
 
     context('default subsite not configured', () => {
       let samples: Sample[] = [
-        [
-          'abc/def.js',
-          undefined,
-          ['/abc/def'],
-        ],
-        [
-          'abc/abc.js',
-          undefined,
-          ['/abc'],
-        ],
-        [
-          'abc/abc/abc.js',
-          undefined,
-          ['/abc/abc'],
-        ],
-        [
-          'abc.js',
-          'def',
-          ['/abc/def'],
-        ],
-        [
-          'abc/abc.js',
-          'def',
-          ['/abc/def'],
-        ],
-        [
-          'abc/def/def.js',
-          'ghi',
-          ['/abc/def/ghi'],
-        ],
-        [
-          'abc/def/def/def.js',
-          'ghi',
-          ['/abc/def/def/ghi'],
-        ],
-        [
-          'abc/def.js',
-          'ghi',
-          ['/abc/def/ghi'],
-        ],
-        [
-          'abc/default.js',
-          undefined,
-          ['/abc'],
-        ],
-        [
-          'default.js',
-          undefined,
-          ['/'],
-        ],
-        [
-          'default.js',
-          'abc',
-          ['/abc'],
-        ],
-        [
-          'abc.js',
-          undefined,
-          ['/abc'],
-        ],
+        ['abc/def.js', undefined, ['/abc/def']],
+        ['abc/abc.js', undefined, ['/abc']],
+        ['abc/abc/abc.js', undefined, ['/abc/abc']],
+        ['abc.js', 'def', ['/abc/def']],
+        ['abc/abc.js', 'def', ['/abc/def']],
+        ['abc/def/def.js', 'ghi', ['/abc/def/ghi']],
+        ['abc/def/def/def.js', 'ghi', ['/abc/def/def/ghi']],
+        ['abc/def.js', 'ghi', ['/abc/def/ghi']],
+        ['abc/default.js', undefined, ['/abc']],
+        ['default.js', undefined, ['/']],
+        ['default.js', 'abc', ['/abc']],
+        ['abc.js', undefined, ['/abc']],
       ];
 
       for (let sample of samples) {
-        it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
+        it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(
+          sample[1],
+        )})`, () => {
           router
             .getPossibleRoutePaths(sample[0], sample[1])
             .should.deep.equal(sample[2]);
@@ -96,21 +56,9 @@ describe('router', () => {
 
     context('default subsite configured as "abc"', () => {
       let samples: Sample[] = [
-        [
-          'abc/def.js',
-          undefined,
-          ['/def', '/abc/def'],
-        ],
-        [
-          'abc/def.js',
-          'ghi',
-          ['/def/ghi', '/abc/def/ghi'],
-        ],
-        [
-          'abc/default.js',
-          undefined,
-          ['/', '/abc'],
-        ],
+        ['abc/def.js', undefined, ['/def', '/abc/def']],
+        ['abc/def.js', 'ghi', ['/def/ghi', '/abc/def/ghi']],
+        ['abc/default.js', undefined, ['/', '/abc']],
       ];
 
       before(() => {
@@ -118,7 +66,9 @@ describe('router', () => {
       });
 
       for (let sample of samples) {
-        it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
+        it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(
+          sample[1],
+        )})`, () => {
           router
             .getPossibleRoutePaths(sample[0], sample[1])
             .should.deep.equal(sample[2]);
@@ -178,10 +128,7 @@ describe('router', () => {
       [
         'default.js',
         undefined,
-        [
-          'views-root/default.hbs',
-          'views-root/default/default.hbs',
-        ],
+        ['views-root/default.hbs', 'views-root/default/default.hbs'],
       ],
       [
         'default.js',
@@ -208,7 +155,9 @@ describe('router', () => {
     ];
 
     for (let sample of samples) {
-      it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(sample[1])})`, () => {
+      it(`should get correct possible paths (${inspect(sample[0])}, ${inspect(
+        sample[1],
+      )})`, () => {
         let paths = router.getPossibleViewPaths(sample[0], sample[1]);
         let expectedPaths = sample[2];
 

@@ -1,18 +1,15 @@
-import { Readable } from 'stream';
+import {Readable} from 'stream';
 
-import { Response as ExpressResponse } from 'express';
+import {Response as ExpressResponse} from 'express';
 
-import {
-  ExpectedError,
-  errorDefaults,
-} from '.';
+import {ExpectedError, errorDefaults} from '.';
 
 export class Response {
   constructor(
     public type: string | undefined,
     public content: string | Buffer | Readable | undefined,
     public status = 200,
-  ) { }
+  ) {}
 
   applyTo(res: ExpressResponse): void {
     res.status(this.status);
@@ -32,10 +29,7 @@ export class Response {
 }
 
 export class Redirection extends Response {
-  constructor(
-    public url: string,
-    status = 302,
-  ) {
+  constructor(public url: string, status = 302) {
     super(undefined, undefined, status);
   }
 
@@ -54,7 +48,7 @@ export class JSONResponse<T> extends Response {
 
 export class JSONDataResponse<T> extends Response {
   constructor(data: T, status?: number) {
-    let json = JSON.stringify({ data });
+    let json = JSON.stringify({data});
     super('application/json', json, status);
   }
 }
@@ -96,7 +90,7 @@ export class JSONErrorResponse extends Response {
 
 export class JSONRedirection extends Response {
   constructor(url: string, status?: number) {
-    let json = JSON.stringify({ location: url });
+    let json = JSON.stringify({location: url});
     super('application/json', json, status);
   }
 }

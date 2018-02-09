@@ -15,10 +15,11 @@ import {
   route,
 } from '../../';
 
-import { TestPermissionDescriptor, TestRoles } from '../modules/user-provider';
+import {TestPermissionDescriptor, TestRoles} from '../modules/user-provider';
 
 // Test vio require
 import * as Test1 from '../modules/test';
+// tslint:disable-next-line:no-duplicate-imports
 import * as Test2 from '../modules/test';
 
 import '../../../src/test/modules/bom-test';
@@ -61,23 +62,32 @@ export default class DefaultController extends Controller {
   @get({
     permission: TestPermissionDescriptor.admin,
   })
-  permissionDenied() { }
+  permissionDenied() {}
 
   @get({
-    permissions: [TestPermissionDescriptor.admin, TestPermissionDescriptor.user],
+    permissions: [
+      TestPermissionDescriptor.admin,
+      TestPermissionDescriptor.user,
+    ],
   })
-  permissionGranted() { }
+  permissionGranted() {}
 
   @get({
-    permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user),
+    permission: PD.and(
+      TestPermissionDescriptor.admin,
+      TestPermissionDescriptor.user,
+    ),
   })
-  permissionDeniedAnd() { }
+  permissionDeniedAnd() {}
 
   @get({
     authentication: true,
-    permission: PD.and(TestPermissionDescriptor.admin, TestPermissionDescriptor.user),
+    permission: PD.and(
+      TestPermissionDescriptor.admin,
+      TestPermissionDescriptor.user,
+    ),
   })
-  permissionGrantedAnd() { }
+  permissionGrantedAnd() {}
 
   @get()
   redirect() {

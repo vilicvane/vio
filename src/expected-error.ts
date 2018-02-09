@@ -61,7 +61,9 @@ export const builtInErrorDefaults = {
   },
 };
 
-export const errorDefaults: { [key: string]: ErrorDefault; } = builtInErrorDefaults;
+export const errorDefaults: {
+  [key: string]: ErrorDefault;
+} = builtInErrorDefaults;
 
 /** Error transformer */
 export type ErrorTransformer = (reason: any) => any;

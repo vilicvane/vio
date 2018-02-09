@@ -1,4 +1,6 @@
-import { handlebars } from 'consolidate';
+// tslint:disable:no-implicit-dependencies
+
+import {handlebars} from 'consolidate';
 import * as express from 'express';
 
 export function createExpressApp(): express.Express {

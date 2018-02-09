@@ -65,10 +65,10 @@ As it's using new ECMAScript features, you will need to use compiler or transpil
 
 ## Features
 
-- Map routes and controllers based on file paths.
-- Support dynamic routes mapping and hot module replacement during development.
-- Return a promise with data to render the view.
-- Use ES7 decorators to specify route handlers.
+* Map routes and controllers based on file paths.
+* Support dynamic routes mapping and hot module replacement during development.
+* Return a promise with data to render the view.
+* Use ES7 decorators to specify route handlers.
 
 Checkout [wiki](https://github.com/vilic/vio/wiki) for examples.
 
@@ -77,14 +77,16 @@ Checkout [wiki](https://github.com/vilic/vio/wiki) for examples.
 Install VIO.
 
 ```sh
+yarn add vio
+# or
 npm install vio --save
 ```
 
 Install a view engine (here we use [handlebars](http://handlebarsjs.com/) with [consolidate](https://github.com/tj/consolidate.js)). And if you are using TypeScript, install related declarations as well.
 
 ```sh
-npm install handlebars consolidate --save
-tsd install express consolidate
+yarn add handlebars consolidate
+yarn add @types/express @types/consolidate --dev
 ```
 
 Check out [handlebars-layout](https://github.com/vilic/handlebars-layout) if it seems to be something you would want.
@@ -99,8 +101,8 @@ The following example is in TypeScript. If you are using Babel, the `import` sta
 import * as Path from 'path';
 
 import * as express from 'express';
-import { handlebars } from 'consolidate';
-import { Router } from 'vio';
+import {handlebars} from 'consolidate';
+import {Router} from 'vio';
 
 let app = express();
 
@@ -109,7 +111,7 @@ app.engine('hbs', handlebars);
 let router = new Router(app, {
   routesRoot: Path.join(__dirname, 'routes'),
   viewsRoot: Path.join(__dirname, '../views'),
-  viewsExtension: '.hbs'
+  viewsExtension: '.hbs',
 });
 
 app.listen(1337);
@@ -118,7 +120,7 @@ app.listen(1337);
 **src/routes/default.ts**
 
 ```ts
-import { Controller, get } from 'vio';
+import {Controller, get} from 'vio';
 
 // extends `Controller` class.
 export default class extends Controller {
@@ -128,7 +130,7 @@ export default class extends Controller {
     // can also be a promise if it's async.
     return {
       title: 'Hello, VIO!',
-      content: 'Keep calm and read the doc!'
+      content: 'Keep calm and read the doc!',
     };
   }
 }
@@ -174,11 +176,11 @@ And if you specified default subsite as `desktop`, it will match both `/` and `/
 
 Taking a better editor navigation experience and file structure into consideration, view matching accepts more patterns. For example, route path `/hello/world` would accept view file (take `.hbs` here) at these paths:
 
-- `/hello/world.hbs`
-- `/hello/world/default.hbs`
-- `/hello/world/default/default.hbs`
-- `/hello/world/world.hbs`
-- `/hello/world/default/world.hbs`
+* `/hello/world.hbs`
+* `/hello/world/default.hbs`
+* `/hello/world/default/default.hbs`
+* `/hello/world/world.hbs`
+* `/hello/world/default/world.hbs`
 
 ## Production Mode
 

@@ -1,15 +1,23 @@
 import * as express from 'express';
 import hyphenate from 'hyphenate';
-import { Resolvable } from 'villa';
+import {Resolvable} from 'villa';
 
-import { Router } from './router';
+import {Router} from './router';
 
 export interface RouterOptions {
   prefix: string;
 }
 
 // TODO: use string literal type.
-export type HttpMethod = 'all' | 'get' | 'post' | 'put' | 'delete' | 'fetch' | 'head' | 'options';
+export type HttpMethod =
+  | 'all'
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'delete'
+  | 'fetch'
+  | 'head'
+  | 'options';
 
 export abstract class Controller {
   routes: Route[];
@@ -57,21 +65,22 @@ export type ExpressResponse = express.Response;
 export type RouteHandler = (req: Request<any>, res: ExpressResponse) => any;
 
 /** @decorator */
-export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPermission> = {}) {
-  return (controllerPrototype: Controller, name: string, descriptor: PropertyDescriptor) => {
+export function route<TPermission>(
+  method: HttpMethod,
+  options: RouteOptions<TPermission> = {},
+) {
+  return (
+    controllerPrototype: Controller,
+    name: string,
+    descriptor: PropertyDescriptor,
+  ) => {
     if (!controllerPrototype.routes) {
       controllerPrototype.routes = [];
     }
 
     let handler = descriptor.value;
 
-    let {
-      path,
-      view,
-      authentication = false,
-      permission,
-      permissions,
-    } = options;
+    let {path, view, authentication = false, permission, permissions} = options;
 
     if (typeof path !== 'string' && name !== 'default') {
       path = hyphenate(name, {
@@ -79,9 +88,11 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
       });
     }
 
-    let permissionDescriptor = permission ?
-      permission : permissions ?
-      new CompoundOrPermissionDescriptor(permissions) : undefined;
+    let permissionDescriptor = permission
+      ? permission
+      : permissions
+        ? new CompoundOrPermissionDescriptor(permissions)
+        : undefined;
 
     controllerPrototype.routes.push({
       method: method.toLowerCase(),
@@ -96,8 +107,12 @@ export function route<TPermission>(method: HttpMethod, options: RouteOptions<TPe
 
 /** @decorator */
 export function method<TPermission>(options?: MethodOptions<TPermission>) {
-  return (controller: Controller, name: HttpMethod, descriptor: PropertyDescriptor) => {
-    return route(name, options)(controller, 'default', descriptor);
+  return (
+    controller: Controller,
+    name: HttpMethod,
+    descriptor: PropertyDescriptor,
+  ) => {
+    route(name, options)(controller, 'default', descriptor);
   };
 }
 
@@ -114,19 +129,21 @@ export function post<TPermission>(options?: RouteOptions<TPermission>) {
 export abstract class PermissionDescriptor<T> {
   abstract validate(userPermission: T): boolean | string;
 
-  static or<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
+  static or<T>(
+    ...permissions: PermissionDescriptor<T>[]
+  ): PermissionDescriptor<T> {
     return new CompoundOrPermissionDescriptor<T>(permissions);
   }
 
-  static and<T>(...permissions: PermissionDescriptor<T>[]): PermissionDescriptor<T> {
+  static and<T>(
+    ...permissions: PermissionDescriptor<T>[]
+  ): PermissionDescriptor<T> {
     return new CompoundAndPermissionDescriptor<T>(permissions);
   }
 }
 
 export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
-  constructor(
-    public descriptors: PermissionDescriptor<T>[],
-  ) {
+  constructor(public descriptors: PermissionDescriptor<T>[]) {
     super();
   }
 
@@ -149,10 +166,10 @@ export class CompoundOrPermissionDescriptor<T> extends PermissionDescriptor<T> {
   }
 }
 
-export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<T> {
-  constructor(
-    public descriptors: PermissionDescriptor<T>[],
-  ) {
+export class CompoundAndPermissionDescriptor<T> extends PermissionDescriptor<
+  T
+> {
+  constructor(public descriptors: PermissionDescriptor<T>[]) {
     super();
   }
 

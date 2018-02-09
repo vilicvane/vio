@@ -1,7 +1,8 @@
 language: node_js
 node_js:
-  - "7"
+  - "8"
+  - "9"
 before_script:
-  - npm run build
+  - yarn build
 after_script:
-  - npm run report-coverage
+  - yarn report-coverage

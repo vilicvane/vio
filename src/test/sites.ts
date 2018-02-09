@@ -1,12 +1,12 @@
-import { Server } from 'http';
+import {Server} from 'http';
 import * as Path from 'path';
 
 import * as express from 'express';
 import * as glob from 'glob';
 
-import { Router } from '../';
-import { createExpressApp, request } from './helpers';
-import { TestUserProvider } from './modules/user-provider';
+import {Router} from '../';
+import {createExpressApp, request} from './helpers';
+import {TestUserProvider} from './modules/user-provider';
 
 interface Test {
   method: string;
@@ -39,76 +39,90 @@ describe('sites', () => {
 
   for (let siteRoutesDirname of siteRoutesDirNames) {
     for (let production of [true, false]) {
-      context(siteRoutesDirname + (production ? '(production mode)' : '(development mode)'), () => {
-        let server: Server;
-        let port = 10047;
+      context(
+        siteRoutesDirname +
+          (production ? '(production mode)' : '(development mode)'),
+        () => {
+          let server: Server;
+          let port = 10047;
 
-        let baseUrl = `http://localhost:${port}`;
-        let testPath = Path.join(__dirname, '../../test', siteRoutesDirname.replace(/-routes$/, ''));
+          let baseUrl = `http://localhost:${port}`;
+          let testPath = Path.join(
+            __dirname,
+            '../../test',
+            siteRoutesDirname.replace(/-routes$/, ''),
+          );
 
-        let {
-          defaultSubsite,
-          viewsExtension,
-          userProvider: toUseUserProvider,
-          tests,
-        }: TestConfig = require(Path.join(testPath, 'test-config.json'));
-
-        before(() => {
-          let app = createExpressApp();
-
-          let router = new Router(app, {
-            routesRoot: Path.join(__dirname, siteRoutesDirname),
-            viewsRoot: Path.join(testPath, 'views'),
-            viewsExtension,
+          let {
             defaultSubsite,
-            production,
-          });
+            viewsExtension,
+            userProvider: toUseUserProvider,
+            tests,
+          }: TestConfig = require(Path.join(testPath, 'test-config.json'));
 
-          if (toUseUserProvider) {
-            router.userProvider = new TestUserProvider();
-          }
+          before(() => {
+            let app = createExpressApp();
 
-          server = app.listen(port);
-        });
-
-        after(() => {
-          server.close();
-
-          let cache = require.cache;
-
-          for (let path of Object.keys(cache)) {
-            if (/(?:[\\/]modules|-routes)[\\/]/.test(path)) {
-              delete cache[path];
-            }
-          }
-        });
-
-        for (let test of tests) {
-          it(`"${test.path}" ${test.description}`, () => {
-            let expectation = test.expected.all || (
-              production ?
-                test.expected.production :
-                test.expected.development
-            )!;
-
-            return request(test.method, baseUrl + test.path).then(result => {
-              result.status.should.equal(expectation.status);
-
-              if (expectation.contentType) {
-                result.contentType.should.match(new RegExp(expectation.contentType));
-              }
-
-              if (expectation.content) {
-                if (/json/.test(result.contentType)) {
-                  (JSON.parse(result.content) as object).should.deep.equal(expectation.content);
-                } else {
-                  result.content.should.match(new RegExp(expectation.content as string));
-                }
-              }
+            let router = new Router(app, {
+              routesRoot: Path.join(__dirname, siteRoutesDirname),
+              viewsRoot: Path.join(testPath, 'views'),
+              viewsExtension,
+              defaultSubsite,
+              production,
             });
+
+            if (toUseUserProvider) {
+              router.userProvider = new TestUserProvider();
+            }
+
+            server = app.listen(port);
           });
-        }
-      });
+
+          after(() => {
+            server.close();
+
+            let cache = require.cache;
+
+            for (let path of Object.keys(cache)) {
+              if (/(?:[\\/]modules|-routes)[\\/]/.test(path)) {
+                delete cache[path];
+              }
+            }
+          });
+
+          for (let test of tests) {
+            it(`"${test.path}" ${test.description}`, () => {
+              let expectation =
+                test.expected.all ||
+                (production
+                  ? test.expected.production
+                  : test.expected.development)!;
+
+              return request(test.method, baseUrl + test.path).then(result => {
+                result.status.should.equal(expectation.status);
+
+                if (expectation.contentType) {
+                  result.contentType.should.match(
+                    new RegExp(expectation.contentType),
+                  );
+                }
+
+                if (expectation.content) {
+                  if (/json/.test(result.contentType)) {
+                    (JSON.parse(result.content) as object).should.deep.equal(
+                      expectation.content,
+                    );
+                  } else {
+                    result.content.should.match(
+                      new RegExp(expectation.content as string),
+                    );
+                  }
+                }
+              });
+            });
+          }
+        },
+      );
     }
   }
 });
