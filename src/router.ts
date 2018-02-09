@@ -77,6 +77,12 @@ export class Router {
   /** Root of route files on file system, ends without '/'. */
   routesRoot: string;
 
+  /**
+   * @production
+   * Folder names under `routesRoot`.
+   */
+  subsiteFolderSet: Set<string>;
+
   /** Root of views files on file system, ends without '/'. */
   viewsRoot: string;
 
@@ -161,6 +167,12 @@ export class Router {
     this.production = production;
 
     if (production) {
+      let subsiteFolders = FS
+        .readdirSync(this.routesRoot)
+        .filter(name => FS.statSync(Path.join(this.routesRoot, name)).isDirectory())
+
+      this.subsiteFolderSet = new Set(subsiteFolders);
+
       this.attachRoutes();
     } else {
       app.use(prefix, (req, res, next) => {
@@ -650,11 +662,18 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
     let part = (/\/[^/?]+|/.exec(requestPath) || [])[0];
 
     if (part) {
-      let subsiteDir = Path.join(this.routesRoot, part);
+      let folder = part.substr(1);
 
-      // Cache in production mode
-      if (this.fsExistsSync(subsiteDir)) {
-        return part.substr(1);
+      if (this.production) {
+        if (this.subsiteFolderSet.has(folder)) {
+          return folder;
+        }
+      } else {
+        let subsiteDir = Path.join(this.routesRoot, part);
+
+        if (this.fsExistsSync(subsiteDir)) {
+          return folder;
+        }
       }
     }
 
