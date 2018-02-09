@@ -112,7 +112,7 @@ export class Router {
     {
       routesRoot = './routes',
       viewsRoot = './views',
-      viewsExtension,
+      viewsExtension = '.html',
       errorViewsFolder = 'error',
       defaultSubsite,
       prefix,
@@ -133,13 +133,11 @@ export class Router {
     this.viewsRoot = Path.resolve(viewsRoot);
     this.errorViewsFolder = errorViewsFolder;
 
-    if (viewsExtension) {
-      if (viewsExtension[0] !== '.') {
-        viewsExtension = `.${viewsExtension}`;
-      }
-
-      this.viewsExtension = viewsExtension;
+    if (viewsExtension[0] !== '.') {
+      viewsExtension = `.${viewsExtension}`;
     }
+
+    this.viewsExtension = viewsExtension;
 
     this.defaultSubsite = defaultSubsite;
 
@@ -153,7 +151,6 @@ export class Router {
         if (prefix[prefix.length - 1] === '/') {
           prefix = prefix.substr(0, prefix.length - 1);
         }
-
       }
     } else {
       prefix = '/';
