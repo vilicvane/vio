@@ -355,17 +355,18 @@ ${error.stack}`);
   // COMMON //
   ////////////
 
-  private pathExistenceCache = new Map<string, boolean>();
+  private pathExistenceCache = new Set<string>();
 
   private fsExistsSync(path: string): boolean {
     if (this.production) {
-      if (this.pathExistenceCache.has(path)) {
-        return this.pathExistenceCache.get(path)!;
-      } else {
-        let exists = FS.existsSync(path);
-        this.pathExistenceCache.set(path, exists);
-        return exists;
+      let exists = this.pathExistenceCache.has(path);
+      if (!exists) {
+        exists = FS.existsSync(path);
+        if (exists) {
+          this.pathExistenceCache.add(path);
+        }
       }
+      return exists;
     } else {
       return FS.existsSync(path);
     }
