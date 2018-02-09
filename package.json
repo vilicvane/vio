@@ -13,7 +13,6 @@
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "build": "yarn lint && rimraf bld && tsc",
     "bare-test": "mocha",
-    "pretest": "yarn build",
     "test": "nyc yarn bare-test",
     "report-coverage": "cat coverage/lcov.info | coveralls"
   },
