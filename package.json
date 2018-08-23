@@ -10,8 +10,8 @@
     "nyc": "nyc",
     "coveralls": "coveralls",
     "tslint": "tslint",
-    "lint": "tslint -c tslint.json -p tsconfig.json",
-    "build": "yarn lint && rimraf bld && tsc",
+    "lint": "tslint -p src",
+    "build": "yarn lint && rimraf bld && tsc -p src",
     "bare-test": "mocha",
     "test": "nyc yarn bare-test",
     "report-coverage": "cat coverage/lcov.info | coveralls"
