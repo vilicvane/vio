@@ -2,8 +2,6 @@ import * as express from 'express';
 import hyphenate from 'hyphenate';
 import {Resolvable} from 'villa';
 
-import {Router} from './router';
-
 export interface RouterOptions {
   prefix: string;
 }
@@ -20,7 +18,7 @@ export type HttpMethod =
   | 'options';
 
 export abstract class Controller {
-  routes: Route[];
+  routes!: Route[];
 }
 
 export interface MethodOptions<TPermission> {
@@ -65,6 +63,7 @@ export type ExpressResponse = express.Response;
 export type RouteHandler = (req: Request<any>, res: ExpressResponse) => any;
 
 /** @decorator */
+// tslint:disable-next-line:explicit-return-type
 export function route<TPermission>(
   method: HttpMethod,
   options: RouteOptions<TPermission> = {},
@@ -73,7 +72,7 @@ export function route<TPermission>(
     controllerPrototype: Controller,
     name: string,
     descriptor: PropertyDescriptor,
-  ) => {
+  ): void => {
     if (!controllerPrototype.routes) {
       controllerPrototype.routes = [];
     }
@@ -106,22 +105,25 @@ export function route<TPermission>(
 }
 
 /** @decorator */
+// tslint:disable-next-line:explicit-return-type
 export function method<TPermission>(options?: MethodOptions<TPermission>) {
   return (
     controller: Controller,
     name: HttpMethod,
     descriptor: PropertyDescriptor,
-  ) => {
+  ): void => {
     route(name, options)(controller, 'default', descriptor);
   };
 }
 
 /** @decorator */
+// tslint:disable-next-line:explicit-return-type
 export function get<TPermission>(options?: RouteOptions<TPermission>) {
   return route('get', options);
 }
 
 /** @decorator */
+// tslint:disable-next-line:explicit-return-type
 export function post<TPermission>(options?: RouteOptions<TPermission>) {
   return route('post', options);
 }

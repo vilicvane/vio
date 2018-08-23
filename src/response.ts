@@ -2,7 +2,7 @@ import {Readable} from 'stream';
 
 import {Response as ExpressResponse} from 'express';
 
-import {ExpectedError, errorDefaults} from '.';
+import {ExpectedError, errorDefaults} from './expected-error';
 
 export class Response {
   constructor(

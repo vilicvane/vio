@@ -1,8 +1,8 @@
-import {Controller, Request, get, post} from '../../';
+import {Controller, get} from '../../route';
 
 export default class DefaultController extends Controller {
   @get()
-  world() {
+  world(): string {
     return 'abc';
   }
 }

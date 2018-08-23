@@ -1,10 +1,10 @@
 import {Server} from 'http';
 import * as Path from 'path';
 
-import * as express from 'express';
 import * as glob from 'glob';
 
-import {Router} from '../';
+import {Router} from '../router';
+
 import {createExpressApp, request} from './helpers';
 import {TestUserProvider} from './modules/user-provider';
 

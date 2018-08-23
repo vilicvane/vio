@@ -1,13 +1,13 @@
-import {Controller, method} from '../../../';
+import {Controller, method} from '../../../route';
 
 export default class extends Controller {
   @method()
-  get() {
+  get(): string {
     return 'get';
   }
 
   @method()
-  post() {
+  post(): string {
     return 'post';
   }
 }

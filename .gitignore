@@ -1,8 +1,21 @@
-/.nyc_output/
-/coverage/
+# Installable packages
 
-/bld/
+node_modules/
 
-/node_modules/
+# Configuration
 
-/npm-debug.log
+.config/
+
+# Building artifacts
+
+bld/
+coverage/
+.nyc_output/
+
+# Debugging outputs
+
+*.log
+
+# Testing files
+
+/test.*

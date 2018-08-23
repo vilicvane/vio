@@ -1,7 +1,9 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 
+// tslint:disable-next-line:no-var-requires no-require-imports
 const Module = require('module');
+
 const originalJSResolver = Module._extensions['.js'];
 
 let lastModifiedTimestamps = new Map<string, number>();
@@ -30,10 +32,11 @@ function lock(path: string): boolean {
   return false;
 }
 
-function stripBOM(content: string) {
+function stripBOM(content: string): string {
   if (content.charCodeAt(0) === 0xfeff) {
     content = content.slice(1);
   }
+
   return content;
 }
 
@@ -52,7 +55,7 @@ Module._extensions['.js'] = (module: any, filename: string) => {
   module._compile(content, filename);
 };
 
-export = (originalRequire: NodeRequire) => {
+export = (originalRequire: NodeRequire): NodeRequire => {
   let vioRequire = function require(path: string): any {
     let resolvedPath = originalRequire.resolve(path);
 
@@ -74,7 +77,7 @@ export = (originalRequire: NodeRequire) => {
     }
 
     return originalRequire(path);
-  };
+  } as NodeRequire;
 
   Object.assign(vioRequire, originalRequire);
 

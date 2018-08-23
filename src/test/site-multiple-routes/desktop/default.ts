@@ -1,8 +1,8 @@
-import {Controller, get} from '../../../';
+import {Controller, get} from '../../../route';
 
 export default class extends Controller {
   @get()
-  default() {
+  default(): object {
     return {
       content: 'desktop home',
     };
@@ -11,7 +11,7 @@ export default class extends Controller {
   @get({
     path: '500',
   })
-  down() {
+  down(): void {
     throw new Error();
   }
 }

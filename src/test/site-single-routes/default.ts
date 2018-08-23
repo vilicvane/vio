@@ -1,68 +1,67 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 
+import '../../../src/test/modules/bom-test';
+import {ExpectedError} from '../../expected-error';
 import {
-  Controller,
-  ExpectedError,
   JSONRedirection,
   JSONResponse,
-  PermissionDescriptor as PD,
   Redirection,
-  Request,
   Response,
+} from '../../response';
+import {
+  Controller,
+  PermissionDescriptor as PD,
+  Request,
   get,
   post,
   route,
-} from '../../';
-
-import {TestPermissionDescriptor, TestRoles} from '../modules/user-provider';
-
+} from '../../route';
 // Test vio require
 import * as Test1 from '../modules/test';
 // tslint:disable-next-line:no-duplicate-imports
 import * as Test2 from '../modules/test';
-
-import '../../../src/test/modules/bom-test';
+import {TestPermissionDescriptor} from '../modules/user-provider';
 
 export default class DefaultController extends Controller {
   @get()
-  default() {
+  default(): object {
     return {
       content: 'default',
     };
   }
 
   @route('get')
-  list() {
+  list(): string {
     return 'list';
   }
 
   @post({
     path: 'u/:user',
   })
-  user(req: Request<any>) {
+  user(req: Request<any>): object {
     return req.params.user;
   }
 
   @get()
-  oops() {
+  oops(): void {
     throw new ExpectedError('INTERNAL_ERROR', 'html 500');
   }
 
   @get()
-  ouch() {
+  ouch(): void {
     throw new ExpectedError('INTERNAL_ERROR_1234' as any);
   }
 
   @get()
-  moduleCache() {
+  moduleCache(): boolean {
     return Test1.foo === Test2.foo;
   }
 
   @get({
     permission: TestPermissionDescriptor.admin,
   })
-  permissionDenied() {}
+  permissionDenied(): void {}
 
   @get({
     permissions: [
@@ -70,7 +69,7 @@ export default class DefaultController extends Controller {
       TestPermissionDescriptor.user,
     ],
   })
-  permissionGranted() {}
+  permissionGranted(): void {}
 
   @get({
     permission: PD.and(
@@ -78,7 +77,7 @@ export default class DefaultController extends Controller {
       TestPermissionDescriptor.user,
     ),
   })
-  permissionDeniedAnd() {}
+  permissionDeniedAnd(): void {}
 
   @get({
     authentication: true,
@@ -87,27 +86,27 @@ export default class DefaultController extends Controller {
       TestPermissionDescriptor.user,
     ),
   })
-  permissionGrantedAnd() {}
+  permissionGrantedAnd(): void {}
 
   @get()
-  redirect() {
+  redirect(): Redirection {
     return new Redirection('/');
   }
 
   @get()
-  jsonRedirect() {
+  jsonRedirect(): JSONRedirection {
     return new JSONRedirection('/');
   }
 
   @get()
-  jsonResponse() {
+  jsonResponse(): JSONResponse<object> {
     return new JSONResponse({
       foo: 'bar',
     });
   }
 
   @get()
-  streamResponse() {
+  streamResponse(): Response {
     let path = Path.join(__dirname, '../../../src/test/data/stream.txt');
     let stream = FS.createReadStream(path);
 

@@ -1,10 +1,10 @@
-import {Controller, Request, get, post} from '../../../';
+import {Controller, get} from '../../../route';
 
 export default class DefaultController extends Controller {
   content = 'user-home';
 
   @get()
-  default() {
+  default(): object {
     return {
       content: this.content,
     };

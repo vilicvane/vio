@@ -1,8 +1,8 @@
-import {Controller, get} from '../../../';
+import {Controller, get} from '../../../route';
 
 export default class extends Controller {
   @get()
-  default() {
+  default(): object {
     return {
       content: 'mobile home',
     };

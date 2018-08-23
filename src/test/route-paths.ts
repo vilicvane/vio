@@ -1,7 +1,7 @@
 import * as Path from 'path';
 import {inspect} from 'util';
 
-import {Router} from '../';
+import Router from '../router';
 
 describe('router', () => {
   let router: {

@@ -4,11 +4,7 @@ import * as FS from 'fs';
 import * as Path from 'path';
 import * as Util from 'util';
 
-import * as Chalk from 'chalk';
-import * as glob from 'glob';
-
-const vioRequire: NodeRequire = require('./require')(require);
-
+import Chalk from 'chalk';
 import {
   Express,
   IRouterMatcher as ExpressRouterMatcher,
@@ -17,32 +13,21 @@ import {
   Response as ExpressResponse,
   Router as ExpressRouter,
 } from 'express';
-
+import glob from 'glob';
 import * as v from 'villa';
 
+import {ErrorTransformer, ExpectedError} from './expected-error';
 import {
-  Controller,
-  ErrorTransformer,
-  ExpectedError,
-  HttpMethod,
   JSONDataResponse,
   JSONErrorResponse,
   JSONRedirection,
-  PermissionDescriptor,
   Redirection,
-  Request,
   Response,
-  Route,
-  RouteHandler,
-  RouteOptions,
-  UserProvider,
-  errorDefaults,
-} from './';
+} from './response';
+import {Controller, Request, Route, UserProvider} from './route';
 
-/**
- * Similar to `ExpressRequestHandler` but with no `next`.
- */
-type RouteRequestHandler = (req: ExpressRequest, res: ExpressResponse) => void;
+// tslint:disable-next-line:no-var-requires no-require-imports
+const vioRequire: NodeRequire = require('./@require')(require);
 
 interface RouteGuess {
   routePath: string;
@@ -82,7 +67,7 @@ export class Router {
    * @production
    * Folder names under `routesRoot`.
    */
-  subsiteFolderSet: Set<string>;
+  subsiteFolderSet!: Set<string>;
 
   /** Root of views files on file system, ends without '/'. */
   viewsRoot: string;
@@ -94,7 +79,7 @@ export class Router {
   errorViewsFolder: string;
 
   /** Default sub site. */
-  defaultSubsite: string;
+  defaultSubsite: string | undefined;
 
   /** Prefix of requesting path, starts with '/' but ends without '/'. */
   prefix: string;
@@ -106,10 +91,10 @@ export class Router {
   router: ExpressRouter;
 
   /** Error transformer. */
-  errorTransformer: ErrorTransformer;
+  errorTransformer!: ErrorTransformer;
 
   /** User provider. */
-  userProvider: UserProvider<any>;
+  userProvider!: UserProvider<any>;
 
   /** Whether running under production mode. */
   production: boolean;
@@ -176,7 +161,7 @@ export class Router {
 
       this.attachRoutes();
     } else {
-      app.use(prefix, (req, res, next) => {
+      app.use(prefix, (req, _res, next) => {
         this.attachRoutesDynamically(req.path);
         next();
       });
@@ -197,7 +182,7 @@ export class Router {
    * Attach routes synchronously when starting up in production environment.
    */
   private attachRoutes(): void {
-    console.log('Loading routes...');
+    console.info('Loading routes...');
 
     let routeFilePaths = glob.sync('**/*.js', {
       cwd: this.routesRoot,
@@ -230,7 +215,7 @@ export class Router {
    * Used only at development.
    */
   private attachRoutesDynamically(requestPath: string): void {
-    console.log('Dynamically loading possible routes...');
+    console.info('Dynamically loading possible routes...');
 
     this.replaceRouter();
 
@@ -424,7 +409,7 @@ ${error.stack}`);
     );
 
     for (let possibleRoutePath of possibleRoutePaths) {
-      console.log(`${Chalk.green('*')} ${possibleRoutePath} \
+      console.info(`${Chalk.green('*')} ${possibleRoutePath} \
 ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
       ((router as any)[methodName] as ExpressRouterMatcher<any>)(
         possibleRoutePath,
@@ -434,8 +419,8 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
   }
 
   private createRouteHandler(route: Route): ExpressRequestHandler {
-    return (req, res, next) => {
-      this.processRequest(req, res, route, next);
+    return (req, res, _next) => {
+      this.processRequest(req, res, route);
     };
   }
 
@@ -554,7 +539,6 @@ ${Chalk.gray(route.resolvedView ? 'has-view' : 'no-view')}`);
     req: ExpressRequest,
     res: ExpressResponse,
     route: Route,
-    next: Function,
   ): void {
     // tslint:disable:no-floating-promises
     (async () => {
@@ -713,7 +697,7 @@ Keep calm and read the doc <a href="https://github.com/vilic/vio">https://github
     return undefined;
   }
 
-  private getSubsiteName(requestPath: string): string {
+  private getSubsiteName(requestPath: string): string | undefined {
     let part = (/\/[^/?]+|/.exec(requestPath) || [])[0];
 
     if (part) {

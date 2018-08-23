@@ -1,6 +1,4 @@
-// tslint:disable:no-implicit-dependencies
-
-import * as sendRequest from 'request';
+import sendRequest from 'request';
 
 export interface RequestResult {
   status: number;
